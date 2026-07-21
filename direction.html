@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Directeur — KPH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="topbar-slot"></div>
+
+<div class="page">
+  <div class="page-head">
+    <div class="eyebrow">Rôle · Directeur</div>
+    <h1>Tableau de bord</h1>
+    <p>Vue de synthèse en lecture seule : rendement (Yield) et productivité (KPH) par groupe et par opératrice.</p>
+  </div>
+
+  <div class="readonly-banner">Accès en visualisation seule — aucune saisie ni modification possible depuis cet écran.</div>
+
+
+  <div class="tabs">
+    
+    <div class="tab" data-tab="rendement">Rendement</div>
+    <div class="tab" data-tab="certificats">Certificats</div>
+    <div class="tab" data-tab="heures">Heures</div>
+  </div>
+
+   <!-- ================= RENDEMENT ================= -->
+   <div class="tabpanel" id="panel-rendement">
+    <div class="card">
+      <h2><span class="n">01</span>Filtres</h2>
+      <div class="grid-2">
+        <div class="field"><label>Date</label><input type="date" id="r-date" onchange="renderRendement()"></div>
+        <div class="field"><label>Groupe</label><select id="r-groupe" onchange="renderRendement()">
+          <option value="">Tous les groupes</option><option value="1">Groupe 1</option><option value="2">Groupe 2</option>
+        </select></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="label">Poids filet total</div><div class="value" id="r-filet">—</div></div>
+      <div class="stat"><div class="label">Yield global (filet / frais)</div><div class="value good" id="r-yield">—</div></div>
+      <div class="stat"><div class="label">KPH global</div><div class="value" id="r-kph">—</div></div>
+      <div class="stat"><div class="label">Total caisses</div><div class="value warn" id="r-caisses">—</div></div>
+    </div>
+    <div class="card">
+      <h2><span class="n">·</span>Détail par opératrice</h2>
+      <p class="hint">KPH = poids filet ÷ heures de l'opératrice. Yield = poids filet ÷ nbr caisses ÷ moyen frais (nécessite un groupe précis et un taux moyen frais défini pour cette date).</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Opératrice</th><th>Groupe</th><th>Poids filet (kg)</th><th>Nbr caisses</th><th>Heures</th><th>KPH</th><th>Yield</th></tr></thead>
+          <tbody id="rendement-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- ================= CERTIFICATS ================= -->
+  <div class="tabpanel" id="panel-certificats">
+    <div class="card">
+      <h2><span class="n">01</span>Filtres</h2>
+      <div class="grid-2">
+        <div class="field"><label>Date</label><input type="date" id="c-date" onchange="renderCertificats()"></div>
+        <div class="field"><label>Groupe</label><select id="c-groupe" onchange="renderCertificats()">
+          <option value="">Tous les groupes</option><option value="1">Groupe 1</option><option value="2">Groupe 2</option>
+        </select></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2><span class="n">·</span>Poids par certificat / espèce</h2>
+      <p class="hint">Poids = somme du poids cuit (poids grille) enregistré pour ce certificat.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Certificat</th><th>Espèce</th><th>Taille</th><th>Poids cuit (kg)</th></tr></thead>
+
+          <tbody id="certificats-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- ================= HEURES ================= -->
+  <div class="tabpanel" id="panel-heures">
+    <div class="card">
+      <h2><span class="n">01</span>Filtres</h2>
+      <div class="grid-3">
+        <div class="field"><label>Date</label><input type="date" id="h-date" onchange="renderHeuresTab()"></div>
+        <div class="field"><label>Groupe</label><select id="h-groupe" onchange="renderHeuresTab()">
+          <option value="">Tous les groupes</option><option value="1">Groupe 1</option><option value="2">Groupe 2</option>
+        </select></div>
+        <div class="field"><label>Service</label><select id="h-service" onchange="renderHeuresTab()">
+          <option value="">Tous les services</option>
+        </select></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="heures-card-header">
+        <h2><span class="n">·</span>Total Heures Travaillées</h2>
+        <div class="heures-card-total">Total : <span id="h-total-heures">—</span> h</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Opératrice</th><th>Numéro</th><th>Groupe</th><th>Services</th><th>Heures</th></tr></thead>
+          <tbody id="heures-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  
+</div>
+
+<script src="app.js"></script>
+<script>
+checkAuth(['direction', 'admin']);
+document.getElementById('topbar-slot').outerHTML = buildTopbar('Directeur · lecture seule');
+/*
+function renderKpi(){
+  const date = document.getElementById('k-date').value;
+  const groupe = document.getElementById('k-groupe').value;
+  const r = computeResultats(date, groupe);
+  document.getElementById('k-filet').textContent = fmt(r.totalFilet) + ' kg';
+  document.getElementById('k-yield').textContent = r.globalYield!==null ? fmt(r.globalYield,1) + ' %' : '—';
+  document.getElementById('k-kph').textContent = r.globalKph!==null ? fmt(r.globalKph,2) : '—';
+  document.getElementById('k-heures').textContent = fmt(r.totalHeures,1) + ' h';
+
+  document.getElementById('kpi-table').innerHTML = r.rows.length ? r.rows.map(row => `
+    <tr><td>${row.operatrice}</td><td>Groupe ${row.groupe}</td><td>${fmt(row.poidsFilet)}</td>
+    <td>${row.yieldPct!==null?fmt(row.yieldPct,1)+' %':'—'}</td><td>${row.kph!==null?fmt(row.kph,2):'—'}</td></tr>`
+  ).join('') : `<tr class="empty-row"><td colspan="5">Aucune donnée pour ce filtre</td></tr>`;
+}
+
+document.getElementById('k-date').value = todayISO();
+window.DB_READY.then(() => {
+  renderKpi();
+});
+
+*/
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tabpanel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+  const map = { rendement:renderRendement, certificats:renderCertificats, frais:renderFrais, pertes:renderPertes, ops:renderOps, heures:renderHeuresTab };
+  if(map[t.dataset.tab]) map[t.dataset.tab]();
+}));
+/* ---------- rendement ---------- */
+function renderRendement(){
+  const date   = document.getElementById('r-date').value;
+  const groupe = document.getElementById('r-groupe').value;
+  const r = computeResultats(date, groupe);
+
+  document.getElementById('r-filet').textContent   = fmt(r.totalFilet) + ' kg';
+  document.getElementById('r-kph').textContent     = r.globalKph   !== null ? fmt(r.globalKph,2)   + ' kg/h' : '—';
+  document.getElementById('r-caisses').textContent = r.totalCaisses;
+
+  if (r.globalYield !== null) {
+    document.getElementById('r-yield').textContent = (r.globalYield * 100).toFixed(1) + ' %';
+  } else {
+    document.getElementById('r-yield').textContent = '—';
+  }
+
+  document.getElementById('rendement-table').innerHTML = r.rows.length ? r.rows.map(row => {
+    let rowYield = '—';
+    if (date && row.nbrCaisse > 0) {
+      let mfGrp = DB.get('moyenfrais').find(m => m.dateProduction === date && String(m.groupe) === String(row.groupe));
+      if (!mfGrp) mfGrp = DB.get('moyenfrais').find(m => m.dateProduction === date);
+      if (mfGrp && mfGrp.moyenFrais) {
+        rowYield = (row.poidsFilet / row.nbrCaisse / mfGrp.moyenFrais * 100).toFixed(1) + ' %';
+      }
+    } else if (!date && row.nbrCaisse > 0) {
+      rowYield = '—';
+    }
+    return `<tr>
+      <td data-label="Opératrice">${row.operatrice}</td>
+      <td data-label="Groupe">Grp ${row.groupe}</td>
+      <td data-label="Poids filet">${fmt(row.poidsFilet)} kg</td>
+      <td data-label="Caisses">${row.nbrCaisse}</td>
+      <td data-label="Heures">${row.heures > 0 ? fmt(row.heures,1) + ' h' : '—'}</td>
+      <td data-label="KPH">${row.kph !== null ? fmt(row.kph,2) : '—'}</td>
+      <td data-label="Yield">${rowYield}</td>
+    </tr>`;
+  }).join('') : `<tr class="empty-row"><td colspan="7">Aucune donnée pour ce filtre</td></tr>`;
+}
+/* ---------- certificats ---------- */
+function renderCertificats(){
+  const date   = document.getElementById('c-date').value;
+  const groupe = document.getElementById('c-groupe').value;
+
+  // Aggregate poidscuit by certificat (from stored certificat field, or via lot join)
+  const cuitRows = DB.get('poidscuit').filter(c =>
+    (!date   || c.dateProduction === date) &&
+    (!groupe || String(c.groupe) === String(groupe))
+  );
+
+  const byCert = {};
+  cuitRows.forEach(c => {
+    // Prefer explicit certificat stored on poidscuit; fall back to looking up lot
+    let certKey  = c.certificat || null;
+    let espece   = c.espece     || null;
+    let taille   = c.taille     || null;
+
+    if (!certKey && c.idLot) {
+      const lot = DB.get('lot').find(l => l.id === c.idLot);
+      if (lot) { certKey = lot.certificat; espece = lot.espece; taille = lot.taille; }
+    }
+    if (!certKey) certKey = '(sans certificat)';
+
+    const key = certKey + '|' + (espece || '');
+    if (!byCert[key]) {
+      byCert[key] = { certificat: certKey, espece: espece || '—', taille: taille || '—', poids: 0, nb: 0 };
+    }
+    byCert[key].poids += Number(c.poidsGrille) || 0;
+    byCert[key].nb++;
+  });
+
+  const rows = Object.values(byCert).sort((a,b) => b.poids - a.poids);
+
+  if (!rows.length) {
+    // Also check if we have any poidscuit at all (to distinguish no data vs wrong filter)
+    const total = DB.get('poidscuit').length;
+    const msg = total === 0
+      ? 'Aucune pesée enregistrée (onglet Pesée)'
+      : 'Aucune donnée pour ce filtre — essayez sans date ou sans groupe';
+    document.getElementById('certificats-table').innerHTML =
+      `<tr class="empty-row"><td colspan="4">${msg}</td></tr>`;
+    return;
+  }
+
+  document.getElementById('certificats-table').innerHTML = rows.map(r => `
+    <tr>
+      <td data-label="Certificat"><span class="ticket">${r.certificat}</span></td>
+      <td data-label="Espèce">${r.espece}</td>
+      <td data-label="Taille">${r.taille}</td>
+      <td data-label="Poids cuit"><strong>${fmt(r.poids)} kg</strong></td>
+    </tr>`
+  ).join('');
+}
+/* ---------- heures ---------- */
+function renderHeuresTab() {
+  const date = document.getElementById('h-date').value;
+  const groupe = document.getElementById('h-groupe').value;
+  const service = document.getElementById('h-service').value.trim().toLowerCase();
+  
+  let rows = DB.get('heures').filter(h => 
+    (!date || h.dateProduction === date) &&
+    (!groupe || String(h.groupe) === String(groupe))
+  );
+  
+  const data = [];
+  rows.forEach(h => {
+    const op = DB.get('operatrice').find(o => o.num === h.num && String(o.groupe) === String(h.groupe));
+    const opServices = op && op.services ? op.services.toLowerCase() : '';
+    if (service && !opServices.includes(service)) return;
+    
+    data.push({
+      operatrice: op ? op.nomPrenom : h.nomPrenom,
+      num: h.num,
+      groupe: h.groupe,
+      services: op ? op.services : '—',
+      heures: h.heures
+    });
+  });
+  
+  let totalH = 0;
+  document.getElementById('heures-table').innerHTML = data.length ? data.map(r => {
+    totalH += Number(r.heures) || 0;
+    return `<tr>
+      <td data-label="Opératrice">${r.operatrice}</td>
+      <td data-label="Numéro">${r.num}</td>
+      <td data-label="Groupe">${r.groupe}</td>
+      <td data-label="Services">${r.services||'—'}</td>
+      <td data-label="Heures"><strong>${fmt(r.heures,2)} h</strong></td>
+    </tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="5">Aucune donnée pour ce filtre</td></tr>';
+  
+  document.getElementById('h-total-heures').textContent = data.length ? fmt(totalH, 2) : '—';
+}
+
+window.__renderers.operatrice = renderOps;
+window.__renderers.moyenfrais = renderFrais;
+window.__renderers.heures = renderHeuresTab;
+window.__renderers.certificats = renderCertificats;
+window.__renderers.rendement = renderRendement;
+window.__renderers.pertes = renderPertes;
+document.getElementById('r-date').value = todayISO();
+document.getElementById('c-date').value = todayISO();
+document.getElementById('h-date').value = todayISO();
+
+window.DB_READY.then(() => {
+  renderRendement(); renderCertificats(); renderHeuresTab();
+});
+</script>
+</body>
+</html>

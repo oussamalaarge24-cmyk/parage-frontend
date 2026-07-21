@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connexion  Atelier de Parage</title>
+<meta name="description" content="Connexion sécurisée au système de gestion de l'atelier de parage KPH">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  :root {
+    --teal: #0c5c66;
+    --teal-dark: #084950;
+    --teal-tint: #e8f4f5;
+    --bg: #f5f8f8;
+    --surface: #fff;
+    --line: #dde8e8;
+    --line-soft: #eef2f2;
+    --ink: #1a2e2e;
+    --ink-soft: #6e8e8e;
+    --red: #c53030;
+    --red-tint: #fff5f5;
+    --green: #2d7d46;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font-body: 'Inter', sans-serif;
+    --font-display: 'Barlow Condensed', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-image: radial-gradient(ellipse at 20% 20%, rgba(12,92,102,0.07) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 80%, rgba(12,92,102,0.05) 0%, transparent 60%);
+  }
+
+  .login-wrap {
+    width: 100%;
+    max-width: 440px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .login-card {
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(12,92,102,0.14), 0 2px 8px rgba(12,92,102,0.06);
+    padding: 48px 40px 40px;
+    border: 1px solid var(--line);
+  }
+
+  /* Logo */
+  .logo-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 32px;
+    gap: 4px;
+  }
+
+  .logo-emblem {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #0c5c66, #084950);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    box-shadow: 0 8px 24px rgba(12,92,102,0.35);
+  }
+
+  .logo-emblem .letters {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+  }
+
+  .logo-name {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: 0.5px;
+  }
+
+  .logo-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+  }
+
+  /* Form */
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .input-wrap {
+    position: relative;
+  }
+
+  .input-wrap .ico {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  .form-group input {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 15px;
+    padding: 13px 14px 13px 42px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    color: var(--ink);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    height: 50px;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(12,92,102,0.1);
+  }
+
+  .form-group input::placeholder { color: #b0bfbf; font-size: 14px; }
+
+  /* Show/hide password button */
+  .input-wrap .show-pw {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--ink-soft);
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+  .input-wrap .show-pw:hover { color: var(--teal); }
+
+  /* Error banner */
+  .error-banner {
+    display: none;
+    background: var(--red-tint);
+    border: 1px solid #f5c6c0;
+    border-radius: var(--radius-sm);
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .error-banner.show { display: flex; }
+
+  /* Submit button */
+  .btn-login {
+    width: 100%;
+    height: 52px;
+    background: linear-gradient(135deg, #0c5c66, #084950);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 15.5px;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 14px rgba(12,92,102,0.3);
+    margin-top: 8px;
+  }
+
+  .btn-login:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(12,92,102,0.38);
+  }
+
+  .btn-login:active:not(:disabled) { transform: translateY(0); }
+  .btn-login:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  /* Default credentials hint */
+  .hint-box {
+    margin-top: 24px;
+    padding: 12px 14px;
+    background: #f0fafa;
+    border: 1px solid #c6e0e3;
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+
+  .hint-box strong { color: var(--teal); }
+
+  .hint-box code {
+    font-family: var(--font-mono);
+    background: #dcedef;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--teal-dark);
+  }
+
+  .credentials-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 12px;
+  }
+
+  .credentials-table th {
+    text-align: left;
+    padding: 4px 6px;
+    color: var(--teal-dark);
+    font-weight: 600;
+    border-bottom: 1px solid #c6e0e3;
+  }
+
+  .credentials-table td {
+    padding: 4px 6px;
+    color: var(--ink-soft);
+  }
+
+  .credentials-table td code {
+    cursor: pointer;
+    user-select: all;
+  }
+
+  .credentials-table tr:hover td { background: rgba(12,92,102,0.04); }
+
+  .footer-note {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+
+  /* Loading overlay */
+  .btn-login .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 480px) {
+    .login-card { padding: 32px 20px 28px; }
+    h1 { font-size: 18px; }
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--teal-dark); color: #eaf3f2;
+    padding: 12px 20px; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    opacity: 0; transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none; z-index: 1000;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-card">
+
+    <!-- Logo -->
+    <div class="logo-block">
+      
+      <div class="logo-name">Atelier de Parage</div>
+      <div class="logo-sub"></div>
+    </div>
+
+    <h1>Connexion</h1>
+    <p class="subtitle">Entrez vos identifiants pour accéder à votre espace</p>
+
+    <!-- Error message -->
+    <div id="errorBanner" class="error-banner">
+      <span>⚠️</span>
+      <span id="errorText">Identifiant ou mot de passe incorrect.</span>
+    </div>
+
+    <!-- Login form -->
+    <form id="loginForm" autocomplete="on">
+
+      <div class="form-group">
+        <label for="loginUsername">Identifiant</label>
+        <div class="input-wrap">
+          <span class="ico">👤</span>
+          <input
+            type="text"
+            id="loginUsername"
+            name="username"
+            placeholder="Votre identifiant"
+            autocomplete="username"
+            spellcheck="false"
+            required
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="loginPassword">Mot de passe</label>
+        <div class="input-wrap">
+          <span class="ico">🔒</span>
+          <input
+            type="password"
+            id="loginPassword"
+            name="password"
+            placeholder="Votre mot de passe"
+            autocomplete="current-password"
+            required
+          >
+          <button type="button" class="show-pw" id="togglePw" title="Afficher/masquer" aria-label="Afficher le mot de passe">👁</button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login" id="loginBtn">Se connecter</button>
+    </form>
+
+    
+
+<script>
+// ── Redirect if already logged in ──────────────────────────────
+(function(){
+  try {
+    const user = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    if (user && user.role) {
+      const map = { admin:'admin.html', chef:'production.html', pesee:'pesee.html',
+                    reception:'reception.html', pointage:'pointage.html', direction:'direction.html' };
+      window.location.replace(map[user.role] || 'index.html');
+    }
+  } catch(e) {}
+})();
+
+// ── Toggle password visibility ─────────────────────────────────
+document.getElementById('togglePw').addEventListener('click', function(){
+  const inp = document.getElementById('loginPassword');
+  const isText = inp.type === 'text';
+  inp.type = isText ? 'password' : 'text';
+  this.textContent = isText ? '👁' : '';
+});
+
+// ── Login form submit ──────────────────────────────────────────
+document.getElementById('loginForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const btn      = document.getElementById('loginBtn');
+  const err      = document.getElementById('errorBanner');
+  const errTxt   = document.getElementById('errorText');
+
+  err.classList.remove('show');
+
+  if (!username || !password) {
+    errTxt.textContent = 'Veuillez remplir tous les champs.';
+    err.classList.add('show');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Connexion…';
+
+  const API = (window.location.port === '3000') ? '/api' : 'http://localhost:3000/api';
+
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      errTxt.textContent = data.error || 'Identifiant ou mot de passe incorrect.';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Se connecter';
+      return;
+    }
+
+    // Save session
+    sessionStorage.setItem('currentUser', JSON.stringify(data.user));
+
+    // Redirect
+    const redirects = {
+      admin:'admin.html', chef:'production.html', pesee:'pesee.html',
+      reception:'reception.html', pointage:'pointage.html', direction:'direction.html'
+    };
+
+    // Flash success
+    btn.innerHTML = '✅ Connecté !';
+    setTimeout(() => {
+      window.location.replace(redirects[data.user.role] || 'index.html');
+    }, 600);
+
+  } catch (err2) {
+    errTxt.textContent = '⚠️ Impossible de contacter le serveur. Assurez-vous que le backend tourne sur le port 3000.';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Se connecter';
+  }
+});
+</script>
+</body>
+</html>

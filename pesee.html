@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent de pesée — KPH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="topbar-slot"></div>
+
+<div class="page">
+  <div class="page-head">
+    <div class="eyebrow">Rôle · Agent de pesée</div>
+    <h1>Saisie de la production</h1>
+    <p>Tapez le numéro de jeton de l'opératrice et rattachez le poids filet au lot en cours — sélectionné par défaut sur le dernier lot reçu.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">01</span>Nouvelle production</h2>
+    <p class="hint">Date de saisie : <strong id="ds-display"></strong> · Heure : <strong id="hr-display"></strong> · Date de production (auto) : <strong id="dp-display"></strong></p>
+
+    <div class="grid-2">
+      <div class="field">
+        <label>Groupe</label>
+        <select id="p-groupe"><option value="1">Groupe 1</option><option value="2">Groupe 2</option></select>
+      </div>
+      <div class="field">
+        <label>Opératrice (numéro de jeton)</label>
+        <input type="number" id="p-numero" placeholder="12" onchange="syncGroupe()">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Lot / certificat</label>
+      <select id="p-lot" onchange="renderTicket()"></select>
+    </div>
+    <div id="lot-ticket"></div>
+
+    <div class="field" style="margin-top:14px">
+      <label>Poids filet (kg)</label>
+      <input type="number" step="0.01" id="p-poids" placeholder="6.32">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveProduction()">Enregistrer la production</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">·</span>Dernière production saisie</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Heure</th><th>Opératrice</th><th>Groupe</th><th>Lot</th><th>Poids filet (kg)</th><th></th></tr></thead>
+        <tbody id="prod-table"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+checkAuth(['pesee', 'admin']);
+document.getElementById('topbar-slot').outerHTML = buildTopbar('Agent de pesée');
+
+
+document.getElementById('ds-display').textContent = todayISO();
+document.getElementById('hr-display').textContent = nowHM();
+document.getElementById('dp-display').textContent = computeDateProduction();
+
+let resolvedOp = null;
+function syncGroupe(){
+  const num = Number(document.getElementById('p-numero').value);
+  resolvedOp = DB.get('operatrice').find(o=>o.num===num) || null;
+  if(resolvedOp) document.getElementById('p-groupe').value = resolvedOp.groupe;
+}
+
+function renderTicket(){
+  const id = Number(document.getElementById('p-lot').value);
+  const lot = DB.get('lot').find(l=>l.id===id);
+  document.getElementById('lot-ticket').innerHTML = lot
+    ? `<span class="ticket"><span class="lbl">Lot</span>${lot.certificat} · ${lot.espece||'—'} · T.${lot.taille||'—'}</span>`
+    : '';
+}
+
+async function saveProduction(){
+  const idLot = Number(document.getElementById('p-lot').value);
+  const num = Number(document.getElementById('p-numero').value);
+  const poidsFilet = Number(document.getElementById('p-poids').value)||0;
+  const op = DB.get('operatrice').find(o=>o.num===num) || null;
+  if(!num){ toast('Indiquez le numéro de jeton'); return; }
+  if(!op){ toast('Numéro de jeton inconnu'); return; }
+  if(!poidsFilet){ toast('Indiquez le poids filet'); return; }
+
+  const record = {
+    dateSaisie: todayISO(),
+    dateProduction: computeDateProduction(),
+    heure: nowHM(),
+    idOperatrice: op.id,
+    idLot, poidsFilet,
+    nombreCaisse: 1,
+    groupe: Number(document.getElementById('p-groupe').value)
+  };
+  const row = await DB.add('production', record);
+  document.getElementById('p-numero').value = '';
+  document.getElementById('p-poids').value = '';
+  document.getElementById('p-numero').focus();
+  toast('Production enregistrée à ' + record.heure);
+  renderProd();
+}
+
+function renderProd(){
+  const last = DB.last('production');
+  const tbody = document.getElementById('prod-table');
+  if(!last){
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">Aucune production saisie aujourd'hui</td></tr>`;
+    return;
+  }
+  const lot = DB.get('lot').find(l=>l.id===last.idLot);
+  const op = DB.get('operatrice').find(o=>o.id===last.idOperatrice);
+  const nom = op ? ('N° ' + op.num + ' — ' + op.nomPrenom) : '—';
+
+  tbody.innerHTML = '';
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td data-label="Heure">${last.heure||'—'}</td>
+    <td data-label="Opératrice">${nom}</td>
+    <td data-label="Groupe">${last.groupe}</td>
+    <td data-label="Lot">${lot?lot.certificat:'—'}</td>
+    <td data-label="Poids filet">${fmt(last.poidsFilet)}</td>
+    <td></td>`;
+  const delTd = tr.lastElementChild;
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn btn-danger';
+  delBtn.style.cssText = 'padding:6px 10px;min-height:32px;font-size:12.5px';
+  delBtn.textContent = '🗑';
+  delBtn.type = 'button';
+  delBtn.addEventListener('click', async () => {
+    if(confirm('Supprimer cette dernière production ?')){
+      await DB.remove('production', last.id);
+      toast('Production supprimée');
+      renderProd();
+    }
+  });
+  delTd.appendChild(delBtn);
+  tbody.appendChild(tr);
+}
+
+window.DB_READY.then(() => {
+  const lastLot = DB.last('lot');
+  document.getElementById('p-lot').innerHTML = lotOptions(lastLot ? lastLot.id : null);
+  renderTicket();
+  renderProd();
+});
+</script>
+</body>
+</html>

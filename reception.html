@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent de réception — KPH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="topbar-slot"></div>
+
+<div class="page">
+  <div class="page-head">
+    <div class="eyebrow">Rôle · Agent de réception</div>
+    <h1>Réception &amp; traçabilité</h1>
+    <p>Chaque lot reçu génère un certificat de traçabilité. Le poids cuit (par chariot) et les déchets (par sac) sont horodatés automatiquement à la saisie.</p>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="lot">1 · Nouveau lot</div>
+    <div class="tab" data-tab="cuit">2 · Poids cuit</div>
+    <div class="tab" data-tab="dechets">3 · Déchets</div>
+  </div>
+
+  <!-- ===== TAB 1 : LOT ===== -->
+  <div class="tabpanel active" id="panel-lot">
+    <div class="card">
+      <h2><span class="n">01</span>Enregistrer un lot</h2>
+      <div class="grid-3">
+        <div class="field">
+          <label>Certificat</label>
+          <input type="text" id="lot-certificat" placeholder="TMIS 237 128 B04">
+        </div>
+        <div class="field">
+          <label>Espèce</label>
+          <input type="text" id="lot-espece" placeholder="T-1">
+        </div>
+        <div class="field">
+          <label>Taille</label>
+          <input type="text" id="lot-taille" placeholder="2-3">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveLot()">Enregistrer le lot</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">·</span>Derniers lots enregistrés</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID Lot</th><th>Certificat</th><th>Espèce</th><th>Taille</th></tr></thead>
+          <tbody id="lot-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 2 : POIDS CUIT ===== -->
+  <div class="tabpanel" id="panel-cuit">
+    <div class="card">
+      <h2><span class="n">02</span>Poids cuit (par chariot)</h2>
+      <p class="hint">Date et heure enregistrées automatiquement au moment de la saisie.</p>
+      <div class="field">
+        <label>Groupe</label>
+        <select id="cuit-groupe"><option value="1">Groupe 1</option><option value="2">Groupe 2</option></select>
+      </div>
+      <div class="field">
+        <label>Lot / certificat</label>
+        <select id="cuit-lot"></select>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Numéro chariot</label>
+          <input type="number" id="cuit-chariot" placeholder="12">
+        </div>
+        <div class="field">
+          <label>Poids grille (kg)</label>
+          <input type="number" step="0.01" id="cuit-poids" placeholder="46.30">
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="saveCuit()">Enregistrer le poids cuit</button></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">·</span>Entrées du jour</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Heure</th><th>Groupe</th><th>Lot</th><th>Chariot</th><th>Poids grille (kg)</th><th></th></tr></thead>
+          <tbody id="cuit-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 3 : DECHETS ===== -->
+  <div class="tabpanel" id="panel-dechets">
+    <div class="card">
+      <h2><span class="n">03</span>Déchets (par sac)</h2>
+      <p class="hint">Date et heure enregistrées automatiquement au moment de la saisie.</p>
+      <div class="field">
+        <label>Groupe</label>
+        <select id="dech-groupe"><option value="1">Groupe 1</option><option value="2">Groupe 2</option></select>
+      </div>
+      <div class="grid-3">
+        <div class="field">
+          <label>Numéro sac (BAG)</label>
+          <input type="number" id="dech-bag" placeholder="14">
+        </div>
+        <div class="field">
+          <label>Poids taré (kg)</label>
+          <input type="number" step="0.01" id="dech-tare" placeholder="2.10">
+        </div>
+        <div class="field">
+          <label>Poids net (kg)</label>
+          <input type="number" step="0.01" id="dech-net" placeholder="8.40">
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="saveDechets()">Enregistrer les déchets</button></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">·</span>Entrées du jour</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Heure</th><th>Groupe</th><th>Sac</th><th>Taré (kg)</th><th>Net (kg)</th><th></th></tr></thead>
+          <tbody id="dechets-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+checkAuth(['reception', 'admin']);
+document.getElementById('topbar-slot').outerHTML = buildTopbar('Agent de réception');
+
+
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tabpanel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+}));
+
+async function saveLot(){
+  const certificat = document.getElementById('lot-certificat').value.trim();
+  const espece = document.getElementById('lot-espece').value.trim();
+  const taille = document.getElementById('lot-taille').value.trim();
+  if(!certificat){ toast('Le numéro de certificat est requis'); return; }
+  const row = await DB.add('lot', { certificat, espece, taille });
+  ['lot-certificat','lot-espece','lot-taille'].forEach(id => document.getElementById(id).value='');
+  toast('Lot ' + certificat + ' enregistré');
+  document.getElementById('cuit-lot').innerHTML = lotOptions(row.id);
+  renderLots();
+}
+
+function renderLots(){
+  const lots = DB.get('lot');
+  const last3 = lots.slice(-3).reverse();
+  document.getElementById('lot-table').innerHTML = last3.length ? last3.map(l => `
+    <tr>
+      <td data-label="ID Lot"><span class="ticket">${l.id}</span></td>
+      <td data-label="Certificat">${l.certificat}</td>
+      <td data-label="Espèce">${l.espece||'—'}</td>
+      <td data-label="Taille">${l.taille||'—'}</td>
+    </tr>`).join('') : `<tr class="empty-row"><td colspan="4">Aucun lot enregistré pour le moment</td></tr>`;
+}
+
+async function saveCuit(){
+  const idLot = Number(document.getElementById('cuit-lot').value);
+  const lot = DB.get('lot').find(l=>l.id===idLot);
+  if(!lot){ toast('Créez d\'abord un lot'); return; }
+  const record = {
+    dateProduction: computeDateProduction(),
+    heure: nowHM(),
+    groupe: Number(document.getElementById('cuit-groupe').value),
+    certificat: lot.certificat, espece: lot.espece, taille: lot.taille,
+    numeroChariot: Number(document.getElementById('cuit-chariot').value)||0,
+    poidsGrille: Number(document.getElementById('cuit-poids').value)||0
+  };
+  const row = await DB.add('poidscuit', record);
+  ['cuit-chariot','cuit-poids'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('cuit-chariot').focus();
+  toast('Poids cuit enregistré à ' + record.heure);
+  renderCuit();
+}
+function renderCuit(){
+  const rows = DB.get('poidscuit').filter(r => r.dateProduction === computeDateProduction());
+  const lastRow = rows.length ? [rows[rows.length - 1]] : [];
+  document.getElementById('cuit-table').innerHTML = lastRow.length ? lastRow.map(r => `
+    <tr>
+      <td data-label="Heure">${r.heure||'—'}</td>
+      <td data-label="Groupe">${r.groupe}</td>
+      <td data-label="Lot">${r.certificat}</td>
+      <td data-label="Chariot">#${r.numeroChariot}</td>
+      <td data-label="Poids grille">${fmt(r.poidsGrille)}</td>
+      <td><button class="btn btn-danger" data-del="poidscuit" data-id="${r.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">Suppr.</button></td>
+    </tr>`).join('')
+    : `<tr class="empty-row"><td colspan="6">Aucune saisie aujourd'hui</td></tr>`;
+}
+
+async function saveDechets(){
+  const record = {
+    dateProduction: computeDateProduction(),
+    heure: nowHM(),
+    groupe: Number(document.getElementById('dech-groupe').value),
+    numeroBag: Number(document.getElementById('dech-bag').value)||0,
+    poidsTare: Number(document.getElementById('dech-tare').value)||0,
+    poidsNet: Number(document.getElementById('dech-net').value)||0
+  };
+  const row = await DB.add('dechets', record);
+  ['dech-bag','dech-tare','dech-net'].forEach(id => document.getElementById(id).value='');
+  toast('Déchets enregistrés à ' + record.heure);
+  renderDechets();
+}
+function renderDechets(){
+  const rows = DB.get('dechets').filter(r => r.dateProduction === computeDateProduction());
+  document.getElementById('dechets-table').innerHTML = rows.length ? rows.map(r => `
+    <tr>
+      <td data-label="Heure">${r.heure||'—'}</td>
+      <td data-label="Groupe">${r.groupe}</td>
+      <td data-label="Sac">#${r.numeroBag}</td>
+      <td data-label="Taré (kg)">${fmt(r.poidsTare)}</td>
+      <td data-label="Net (kg)">${fmt(r.poidsNet)}</td>
+      <td><button class="btn btn-danger" data-del="dechets" data-id="${r.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">Suppr.</button></td>
+    </tr>`).join('')
+    : `<tr class="empty-row"><td colspan="6">Aucune saisie aujourd'hui</td></tr>`;
+}
+
+window.__renderers.poidscuit = renderCuit;
+window.__renderers.dechets = renderDechets;
+
+window.DB_READY.then(() => {
+  document.getElementById('cuit-lot').innerHTML = lotOptions(DB.last('lot') ? DB.last('lot').id : null);
+  renderLots(); renderCuit(); renderDechets();
+});
+</script>
+</body>
+</html>

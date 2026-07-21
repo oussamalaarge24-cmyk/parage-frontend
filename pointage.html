@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent de pointage — KPH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="topbar-slot"></div>
+
+<div class="page">
+  <div class="page-head">
+    <div class="eyebrow">Rôle · Agent de pointage</div>
+    <h1>Pointage par badge horaire</h1>
+    <p>Une opératrice peut sortir et rentrer plusieurs fois dans la journée (pause, sortie ponctuelle...) — jusqu'à 3 cycles Entrée / Sortie sont disponibles par numéro. Le total d'heures est calculé automatiquement.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">01</span>Sélection</h2>
+    <div class="grid-3">
+      <div class="field">
+        <label>Date de production</label>
+        <input type="date" id="h-dateprod" onchange="buildGrid()">
+      </div>
+      <div class="field">
+        <label>Groupe</label>
+        <select id="h-groupe" onchange="buildGrid()">
+          <option value="1">Groupe 1</option>
+          <option value="2">Groupe 2</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Rechercher par jeton (N°)</label>
+        <input type="number" id="h-search" placeholder="12" oninput="filterGrid()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">02</span>Badges par numéro</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2">Num</th>
+            <th colspan="2">Cycle 1</th>
+            <th colspan="2">Cycle 2</th>
+            <th colspan="2">Cycle 3</th>
+            <th rowspan="2">Heures</th>
+          </tr>
+          <tr>
+            <th>Entrée</th><th>Sortie</th>
+            <th>Entrée</th><th>Sortie</th>
+            <th>Entrée</th><th>Sortie</th>
+          </tr>
+        </thead>
+        <tbody id="grid-body"></tbody>
+      </table>
+    </div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-primary" onclick="saveAll()">Enregistrer tous les badges</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="heures-card-header">
+      <h2><span class="n">·</span>Déjà pointé aujourd'hui</h2>
+      <div class="heures-card-total">Total : <span id="p-total-heures">—</span> h</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Groupe</th><th>Num</th><th>Cycle 1</th><th>Cycle 2</th><th>Cycle 3</th><th>Heures</th></tr></thead>
+        <tbody id="pointed-table"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+checkAuth(['pointage', 'admin']);
+document.getElementById('topbar-slot').outerHTML = buildTopbar('Agent de pointage');
+document.getElementById('h-dateprod').value = todayISO();
+
+function buildGrid(){
+  const groupe = Number(document.getElementById('h-groupe').value);
+  const dateprod = document.getElementById('h-dateprod').value;
+  const existing = DB.get('heures').filter(h => h.dateProduction===dateprod && h.groupe===groupe);
+  const ops = DB.get('operatrice').filter(o => o.groupe === groupe).sort((a,b)=>a.num-b.num);
+
+  document.getElementById('grid-body').innerHTML = ops.length ? ops.map(o => {
+    const prev = existing.find(e => e.num === o.num) || {};
+    return `<tr data-num="${o.num}">
+      <td>N° ${o.num}</td>
+      <td><input type="time" class="in-e1" value="${prev.entree1||''}" onchange="recalcRow(${o.num})"></td>
+      <td><input type="time" class="in-s1" value="${prev.sortie1||''}" onchange="recalcRow(${o.num})"></td>
+      <td><input type="time" class="in-e2" value="${prev.entree2||''}" onchange="recalcRow(${o.num})"></td>
+      <td><input type="time" class="in-s2" value="${prev.sortie2||''}" onchange="recalcRow(${o.num})"></td>
+      <td><input type="time" class="in-e3" value="${prev.entree3||''}" onchange="recalcRow(${o.num})"></td>
+      <td><input type="time" class="in-s3" value="${prev.sortie3||''}" onchange="recalcRow(${o.num})"></td>
+      <td class="out-heures">${prev.heures ? fmt(prev.heures,2) : '—'}</td>
+    </tr>`;
+  }).join('') : `<tr class="empty-row"><td colspan="8">Aucune opératrice dans ce groupe</td></tr>`;
+  filterGrid();
+  renderPointed();
+}
+
+function recalcRow(num){
+  const tr = document.querySelector(`#grid-body tr[data-num="${num}"]`);
+  if(!tr) return;
+  const pairs = [
+    [tr.querySelector('.in-e1').value, tr.querySelector('.in-s1').value],
+    [tr.querySelector('.in-e2').value, tr.querySelector('.in-s2').value],
+    [tr.querySelector('.in-e3').value, tr.querySelector('.in-s3').value]
+  ];
+  let total = 0, any = false;
+  pairs.forEach(([e,s]) => { if(e && s){ total += hoursBetween(e,s); any = true; } });
+  tr.querySelector('.out-heures').textContent = any ? fmt(total,2) : '—';
+}
+
+function filterGrid(){
+  const q = document.getElementById('h-search').value.trim();
+  document.querySelectorAll('#grid-body tr[data-num]').forEach(tr => {
+    tr.style.display = (!q || tr.dataset.num === q) ? '' : 'none';
+  });
+}
+
+async function saveAll(){
+  const groupe = Number(document.getElementById('h-groupe').value);
+  const dateProduction = document.getElementById('h-dateprod').value;
+
+  const records = [];
+  document.querySelectorAll('#grid-body tr[data-num]').forEach(tr => {
+    const num = Number(tr.dataset.num);
+    const op = DB.get('operatrice').find(o=>o.num===num && o.groupe===groupe);
+    const entree1 = tr.querySelector('.in-e1').value, sortie1 = tr.querySelector('.in-s1').value;
+    const entree2 = tr.querySelector('.in-e2').value, sortie2 = tr.querySelector('.in-s2').value;
+    const entree3 = tr.querySelector('.in-e3').value, sortie3 = tr.querySelector('.in-s3').value;
+    let heures = 0;
+    [[entree1,sortie1],[entree2,sortie2],[entree3,sortie3]].forEach(([e,s]) => { if(e && s) heures += hoursBetween(e,s); });
+
+    records.push({
+      dateSaisie: todayISO(), dateProduction, groupe, num,
+      nomPrenom: op ? op.nomPrenom : '',
+      entree1, sortie1, entree2, sortie2, entree3, sortie3,
+      heures
+    });
+  });
+
+  try {
+    await DB.savePointage({ dateProduction, groupe, records });
+    toast('Badges enregistrés pour le groupe ' + groupe);
+    renderPointed();
+  } catch(e) {
+    toast('Erreur lors de l\'enregistrement');
+  }
+}
+
+function cycleLabel(e,s){ return (e||s) ? `${e||'—'} → ${s||'—'}` : '—'; }
+
+function renderPointed(){
+  const dateprod = document.getElementById('h-dateprod').value;
+  const rows = DB.get('heures').filter(h => h.dateProduction===dateprod);
+  let totalH = 0;
+  document.getElementById('pointed-table').innerHTML = rows.length ? rows.map(r => {
+    totalH += Number(r.heures) || 0;
+    return `<tr>
+      <td data-label="Groupe">${r.groupe}</td>
+      <td data-label="N°">N° ${r.num}</td>
+      <td data-label="Cycle 1">${cycleLabel(r.entree1,r.sortie1)}</td>
+      <td data-label="Cycle 2">${cycleLabel(r.entree2,r.sortie2)}</td>
+      <td data-label="Cycle 3">${cycleLabel(r.entree3,r.sortie3)}</td>
+      <td data-label="Heures">${fmt(r.heures,2)}</td>
+    </tr>`;
+  }).join('') : `<tr class="empty-row"><td colspan="6">Rien pointé aujourd'hui</td></tr>`;
+  document.getElementById('p-total-heures').textContent = rows.length ? fmt(totalH, 2) : '—';
+}
+
+window.DB_READY.then(() => {
+  buildGrid();
+});
+</script>
+</body>
+</html>
