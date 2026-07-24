@@ -13,8 +13,8 @@
 
 <div class="page">
   <div class="page-head">
-    <div class="eyebrow">Rôle · Chef de production</div>
-    <h1>Opératrices &amp; tous les résultats</h1>
+    <div class="eyebrow"></div>
+    <h1></h1>
     <p>L'administrateur centralise la gestion des comptes, des opératrices, et l'ensemble des tableaux de bord (rendement, certificats, moyen frais, pertes).</p>
   </div>
 
@@ -34,7 +34,7 @@
       <div class="grid-3">
         <div class="field"><label>Nom et prénom</label><input type="text" id="o-nom" placeholder="EL HAJJI ZEHRA"></div>
         <div class="field"><label>Matricule</label><input type="text" id="o-matricule" placeholder="MAT-1023"></div>
-        <div class="field"><label>Numéro (jeton)</label><input type="number" id="o-num" placeholder="31"></div>
+        <div class="field"><label>Numéro (jeton)</label><input type="text" id="o-num" placeholder="31"></div>
       </div>
       <div class="grid-2">
         <div class="field"><label>Groupe</label><select id="o-groupe"><option value="1">Groupe 1</option><option value="2">Groupe 2</option></select></div>
@@ -192,96 +192,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   if(map[t.dataset.tab]) map[t.dataset.tab]();
 }));
 
-/* ---------- opératrices ---------- */
-
-/* ---------- opératrices ---------- */
-async function addOp(){
-  const nomPrenom = document.getElementById('o-nom').value.trim();
-  if(!nomPrenom){ toast('Le nom est requis'); return; }
-  const record = {
-    nomPrenom,
-    matricule: document.getElementById('o-matricule').value.trim(),
-    num: Number(document.getElementById('o-num').value)||0,
-    groupe: Number(document.getElementById('o-groupe').value),
-    services: document.getElementById('o-services').value.trim()
-  };
-  const row = await DB.add('operatrice', record);
-  ['o-nom','o-matricule','o-num','o-services'].forEach(id => document.getElementById(id).value='');
-  toast('Opératrice ajoutée');
-  renderOps();
-}
-function renderOps(){
-  const rows = DB.get('operatrice').sort((a,b)=>a.num-b.num);
-  document.getElementById('ops-table').innerHTML = rows.length ? rows.map(o => `
-    <tr id="op-row-${o.id}">
-      <td data-label="Num">${o.num}</td>
-      <td data-label="Nom et prénom">${o.nomPrenom}</td>
-      <td data-label="Matricule">${o.matricule||'—'}</td>
-      <td data-label="Groupe"><span class="pill pill-teal">Groupe ${o.groupe}</span></td>
-      <td data-label="Services">${o.services||'—'}</td>
-      <td>
-        <button class="btn" onclick="openEditOp(${o.id})" style="padding:6px 10px;min-height:32px;font-size:12.5px;margin-right:6px;background:#eef2f2;color:#1a2e2e;border:1px solid #dde8e8;border-radius:4px;cursor:pointer;">✏️ Éditer</button>
-        <button class="btn btn-danger" data-del="operatrice" data-id="${o.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">Suppr.</button>
-      </td>
-    </tr>
-    <tr id="op-edit-${o.id}" style="display:none;background:var(--bg);">
-      <td colspan="6" style="padding:14px 16px;">
-        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:12px;">
-          <div class="field" style="margin:0">
-            <label>Nom et prénom</label>
-            <input type="text" id="edit-nom-${o.id}" value="${o.nomPrenom.replace(/"/g, '&quot;')}">
-          </div>
-          <div class="field" style="margin:0">
-            <label>Groupe</label>
-            <select id="edit-groupe-${o.id}">
-              <option value="1" ${o.groupe==1?'selected':''}>Groupe 1</option>
-              <option value="2" ${o.groupe==2?'selected':''}>Groupe 2</option>
-            </select>
-          </div>
-          <div class="field" style="margin:0">
-            <label>Services</label>
-            <input type="text" id="edit-services-${o.id}" value="${(o.services||'').replace(/"/g, '&quot;')}" placeholder="Parage, Conditionnement">
-          </div>
-        </div>
-        <div class="btn-row" style="margin:0;gap:8px;">
-          <button class="btn btn-primary" onclick="saveOpEdit(${o.id})" style="min-height:34px;font-size:13px;">✔ Enregistrer</button>
-          <button class="btn" onclick="cancelOpEdit(${o.id})" style="min-height:34px;font-size:13px;background:#eef2f2;color:#1a2e2e;border:1px solid #dde8e8;">✕ Annuler</button>
-        </div>
-      </td>
-    </tr>`
-  ).join('') : `<tr class="empty-row"><td colspan="6">Aucune opératrice</td></tr>`;
-
-  updateServiceOptions();
-}
-
-function openEditOp(id) {
-  // Close any other open edit rows first
-  document.querySelectorAll('[id^="op-edit-"]').forEach(r => r.style.display = 'none');
-  const editRow = document.getElementById('op-edit-' + id);
-  if (editRow) editRow.style.display = '';
-}
-
-function cancelOpEdit(id) {
-  const editRow = document.getElementById('op-edit-' + id);
-  if (editRow) editRow.style.display = 'none';
-}
-
-async function saveOpEdit(id) {
-  const nomPrenom = document.getElementById('edit-nom-' + id).value.trim();
-  const groupe    = Number(document.getElementById('edit-groupe-' + id).value);
-  const services  = document.getElementById('edit-services-' + id).value.trim();
-
-  if (!nomPrenom) { toast('Le nom ne peut pas être vide'); return; }
-
-  try {
-    await DB.update('operatrice', id, { nomPrenom, groupe, services });
-    toast('Opératrice mise à jour');
-    renderOps();
-  } catch (err) {
-    toast('Erreur lors de la mise à jour');
-  }
-}
-
+// Define updateServiceOptions before it's used
 function updateServiceOptions() {
   const select = document.getElementById('h-service');
   if (!select) return;
@@ -304,6 +215,175 @@ function updateServiceOptions() {
   select.innerHTML = html;
 }
 
+/* ---------- opératrices ---------- */
+// Track which edit row is currently open
+let currentEditId = null;
+
+async function addOp(){
+  const nomPrenom = document.getElementById('o-nom').value.trim();
+  if(!nomPrenom){ toast('❌ Le nom est requis'); return; }
+  
+  const num = normalizeOperatriceNum(document.getElementById('o-num').value);
+  if (!num) { toast('❌ Le numéro est requis'); return; }
+  
+  const groupe = Number(document.getElementById('o-groupe').value);
+  
+  // Check if the num already exists in the SAME group
+  const existingOps = DB.get('operatrice');
+  const duplicate = existingOps.find(o => normalizeOperatriceNum(o.num) === num && String(o.groupe) === String(groupe));
+  if (duplicate) {
+    toast('❌ Le numéro ' + num + ' est déjà utilisé dans le Groupe ' + groupe + ' par ' + duplicate.nomPrenom);
+    return;
+  }
+  
+  const record = {
+    nomPrenom,
+    matricule: document.getElementById('o-matricule').value.trim(),
+    num: num,
+    groupe: groupe,
+    services: document.getElementById('o-services').value.trim()
+  };
+  await DB.add('operatrice', record);
+  ['o-nom','o-matricule','o-num','o-services'].forEach(id => document.getElementById(id).value='');
+  toast('✅ Opératrice ajoutée');
+  renderOps();
+}
+
+function renderOps(){
+  console.trace("renderOps called");
+  const rows = DB.get('operatrice').sort((a,b)=>compareOperatriceNums(a.num, b.num));
+  document.getElementById('ops-table').innerHTML = rows.length ? rows.map(o => `
+    <tr id="op-row-${o.id}">
+      <td data-label="Num">${o.num}</td>
+      <td data-label="Nom et prénom">${o.nomPrenom}</td>
+      <td data-label="Matricule">${o.matricule||'—'}</td>
+      <td data-label="Groupe"><span class="pill pill-teal">Groupe ${o.groupe}</span></td>
+      <td data-label="Services">${o.services||'—'}</td>
+      <td>
+        <button class="btn edit-btn" onclick="openEditOp(${o.id})" style="padding:6px 10px;min-height:32px;font-size:12.5px;margin-right:6px;background:#eef2f2;color:#1a2e2e;border:1px solid #dde8e8;border-radius:4px;cursor:pointer;">✏️ Éditer</button>
+        <button class="btn btn-danger" data-del="operatrice" data-id="${o.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">Suppr.</button>
+      </td>
+    </tr>
+    <tr id="op-edit-${o.id}" style="display:none;background:var(--bg);">
+      <td colspan="6" style="padding:14px 16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div class="field" style="margin:0">
+            <label>Numéro (jeton)</label>
+            <input type="text" id="edit-num-${o.id}" value="${o.num}" placeholder="31 ou c10" class="edit-input" onclick="event.stopPropagation();">
+          </div>
+          <div class="field" style="margin:0">
+            <label>Nom et prénom</label>
+            <input type="text" id="edit-nom-${o.id}" value="${o.nomPrenom.replace(/"/g, '&quot;')}" class="edit-input" onclick="event.stopPropagation();">
+          </div>
+          <div class="field" style="margin:0">
+            <label>Groupe</label>
+            <select id="edit-groupe-${o.id}" class="edit-input" onclick="event.stopPropagation();">
+              <option value="1" ${o.groupe==1?'selected':''}>Groupe 1</option>
+              <option value="2" ${o.groupe==2?'selected':''}>Groupe 2</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Services</label>
+            <input type="text" id="edit-services-${o.id}" value="${(o.services||'').replace(/"/g, '&quot;')}" placeholder="Parage, Conditionnement" class="edit-input" onclick="event.stopPropagation();">
+          </div>
+        </div>
+        <div class="btn-row" style="margin:0;gap:8px;">
+          <button class="btn btn-primary" onclick="saveOpEdit(${o.id})" style="min-height:34px;font-size:13px;">✔ Enregistrer</button>
+          <button class="btn" onclick="cancelOpEdit(${o.id})" style="min-height:34px;font-size:13px;background:#eef2f2;color:#1a2e2e;border:1px solid #dde8e8;">✕ Annuler</button>
+        </div>
+      </td>
+    </tr>`
+  ).join('') : `<tr class="empty-row"><td colspan="6">Aucune opératrice</td></tr>`;
+
+  updateServiceOptions();
+  
+  // Restore the edit row if one was open - IMPORTANT: This keeps the edit form open after re-render
+  if (currentEditId !== null) {
+    const editRow = document.getElementById('op-edit-' + currentEditId);
+    if (editRow) {
+      editRow.style.display = 'table-row';
+    } else {
+      currentEditId = null;
+    }
+  }
+}
+
+function openEditOp(id) {
+  // Close any other open edit row
+  if (currentEditId !== null && currentEditId !== id) {
+    const prevEditRow = document.getElementById('op-edit-' + currentEditId);
+    if (prevEditRow) prevEditRow.style.display = 'none';
+  }
+  
+  // Open the edit row
+  const editRow = document.getElementById('op-edit-' + id);
+  if (editRow) {
+    editRow.style.display = 'table-row';
+    currentEditId = id;
+  }
+}
+
+function cancelOpEdit(id) {
+  const editRow = document.getElementById('op-edit-' + id);
+  if (editRow) {
+    editRow.style.display = 'none';
+    if (currentEditId === id) {
+      currentEditId = null;
+    }
+  }
+}
+
+async function saveOpEdit(id) {
+  const num = normalizeOperatriceNum(document.getElementById('edit-num-' + id).value);
+  const nomPrenom = document.getElementById('edit-nom-' + id).value.trim();
+  const groupe    = Number(document.getElementById('edit-groupe-' + id).value);
+  const services  = document.getElementById('edit-services-' + id).value.trim();
+
+  if (!nomPrenom) { toast('❌ Le nom ne peut pas être vide');    return;
+}
+  if (!num) { toast('❌ Le numéro ne peut pas être vide'); return; }
+
+  // Check if the num already exists for another operator in the SAME group
+  const existingOps = DB.get('operatrice');
+  const duplicate = existingOps.find(o => normalizeOperatriceNum(o.num) === num && String(o.groupe) === String(groupe) && o.id !== id);
+  if (duplicate) {
+    toast('❌ Le numéro ' + num + ' est déjà utilisé dans le Groupe ' + groupe + ' par ' + duplicate.nomPrenom);
+    return;
+  }
+
+  try {
+    await DB.update('operatrice', id, { num, nomPrenom, groupe, services });
+    toast('✅ Opératrice mise à jour');
+    // Close the edit row after saving
+    const editRow = document.getElementById('op-edit-' + id);
+    if (editRow) {
+      editRow.style.display = 'none';
+      if (currentEditId === id) {
+        currentEditId = null;
+      }
+    }
+    renderOps();
+  } catch (err) {
+    toast('❌ Erreur lors de la mise à jour');
+  }
+}
+
+// Stop all click events on edit inputs from bubbling up
+document.addEventListener('click', function(e) {
+  if (e.target.closest && e.target.closest('.edit-input')) {
+    e.stopPropagation();
+    return false;
+  }
+}, true);
+
+// Also stop mousedown events
+document.addEventListener('mousedown', function(e) {
+  if (e.target.closest && e.target.closest('.edit-input')) {
+    e.stopPropagation();
+    return false;
+  }
+}, true);
+
 /* ---------- rendement ---------- */
 function renderRendement(){
   const date   = document.getElementById('r-date').value;
@@ -322,20 +402,7 @@ function renderRendement(){
   }
 
   document.getElementById('rendement-table').innerHTML = r.rows.length ? r.rows.map(row => {
-    // Per-row yield: look up moyenFrais for THIS row's groupe on the selected date
-    let rowYield = '—';
-    if (date && row.nbrCaisse > 0) {
-      // Try exact group match first, then fallback to any group's moyenFrais for the date
-      let mfGrp = DB.get('moyenfrais').find(m => m.dateProduction === date && String(m.groupe) === String(row.groupe));
-      if (!mfGrp) mfGrp = DB.get('moyenfrais').find(m => m.dateProduction === date);
-      
-      if (mfGrp && mfGrp.moyenFrais) {
-        rowYield = (row.poidsFilet / row.nbrCaisse / mfGrp.moyenFrais * 100).toFixed(1) + ' %';
-      }
-    } else if (!date && row.nbrCaisse > 0) {
-      // No date filter — show KPH only, yield needs a date
-      rowYield = '—';
-    }
+    let rowYield = row.yieldVal !== null ? (row.yieldVal * 100).toFixed(1) + ' %' : '—';
     return `<tr>
       <td data-label="Opératrice">${row.operatrice}</td><td data-label="Groupe">Grp ${row.groupe}</td>
       <td data-label="Poids filet">${fmt(row.poidsFilet)} kg</td><td data-label="Caisses">${row.nbrCaisse}</td>

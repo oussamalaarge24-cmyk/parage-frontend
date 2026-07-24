@@ -50,10 +50,12 @@ function buildTopbar(roleLabel) {
   const userName = user ? user.nom : '';
   return `
   <div class="topbar">
-    <div class="brand">
-      <span class="mark">KPH</span>
-      <span class="sub">ATELIER&nbsp;DE&nbsp;PARAGE</span>
+    <div class="brand" style="display: flex; align-items: center; max-height: 40px;">
+      <span class="mark" style="font-weight: 900; font-size: 32px;">B</span>
+      <span class="sub" style="padding: 7px 14px; margin-left: 6px;">ATELIER&nbsp;DE&nbsp;PARAGE</span>
     </div>
+    <span style="padding-left: 240px; color:#FFFFFF; font-weight: 900; font-size: 32px; letter-spacing: 2px;">BMX</span>
+
     <div style="display:flex;align-items:center;gap:14px;">
       ${userName ? `<div style="font-size:13px;color:#a9c9c6;font-weight:500;">👤 ${userName}</div>` : ''}
       <div class="role-chip">
@@ -106,6 +108,23 @@ function fmt(n, d = 2) {
   return (n === null || n === undefined || isNaN(n)) ? '—' : Number(n).toFixed(d);
 }
 
+function normalizeOperatriceNum(value) {
+  if (value === null || value === undefined) return '';
+  return String(value).trim();
+}
+
+function compareOperatriceNums(a, b) {
+  const av = normalizeOperatriceNum(a);
+  const bv = normalizeOperatriceNum(b);
+  if (!av && !bv) return 0;
+  if (!av) return 1;
+  if (!bv) return -1;
+  const an = Number(av);
+  const bn = Number(bv);
+  if (!Number.isNaN(an) && !Number.isNaN(bn) && av !== '' && bv !== '') return an - bn;
+  return av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+}
+
 // ── Select / option helpers ────────────────────────────────────
 
 function lotOptions(selectedId) {
@@ -123,7 +142,7 @@ function operatriceOptions(selectedId) {
 }
 
 function operatriceOptionsByNum(selectedId) {
-  return DB.get('operatrice').sort((a, b) => a.num - b.num).map(o =>
+  return DB.get('operatrice').sort((a, b) => compareOperatriceNums(a.num, b.num)).map(o =>
     `<option value="${o.id}" ${o.id === selectedId ? 'selected' : ''}>N° ${o.num}</option>`
   ).join('');
 }
@@ -140,24 +159,31 @@ function findOperatriceByName(name) {
 
 // ── Analytics helpers ──────────────────────────────────────────
 
-function computeResultats(filterDate, filterGroupe) {
+function isDateMatch(d, dStart, dEnd) {
+  if (!dStart && !dEnd) return true;
+  if (dStart && !dEnd) return d === dStart;
+  if (!dStart && dEnd) return d <= dEnd;
+  return d >= dStart && d <= dEnd;
+}
+
+function computeResultats(filterDateStart, filterGroupe, filterDateEnd = null) {
   const prod = DB.get('production').filter(p =>
-    (!filterDate || p.dateProduction === filterDate) &&
+    isDateMatch(p.dateProduction, filterDateStart, filterDateEnd) &&
     (!filterGroupe || String(p.groupe) === String(filterGroupe))
   );
   const cuit = DB.get('poidscuit').filter(c =>
-    (!filterDate || c.dateProduction === filterDate) &&
+    isDateMatch(c.dateProduction, filterDateStart, filterDateEnd) &&
     (!filterGroupe || String(c.groupe) === String(filterGroupe))
   );
   const heuresRows = DB.get('heures').filter(h =>
-    (!filterDate || h.dateProduction === filterDate) &&
+    isDateMatch(h.dateProduction, filterDateStart, filterDateEnd) &&
     (!filterGroupe || String(h.groupe) === String(filterGroupe))
   );
 
-  const preciseFilter = !!(filterDate && filterGroupe);
+  const preciseFilter = !!(filterDateStart && filterGroupe && !filterDateEnd);
   const moyenFraisRate = preciseFilter
     ? DB.get('moyenfrais').find(m =>
-        m.dateProduction === filterDate && String(m.groupe) === String(filterGroupe))
+        m.dateProduction === filterDateStart && String(m.groupe) === String(filterGroupe))
     : null;
 
   const byOperatrice = {};
@@ -166,10 +192,19 @@ function computeResultats(filterDate, filterGroupe) {
     const key = op ? op.id : ('?' + (p.idOperatrice || 'inconnu'));
     byOperatrice[key] = byOperatrice[key] || {
       operatrice: op ? op.nomPrenom : '—', num: op ? op.num : null,
-      poidsFilet: 0, nbrCaisse: 0, groupe: p.groupe
+      poidsFilet: 0, nbrCaisse: 0, groupe: p.groupe, fraisIndividuel: 0
     };
+    let caisses = Number(p.nombreCaisse) || 0;
     byOperatrice[key].poidsFilet  += Number(p.poidsFilet)  || 0;
-    byOperatrice[key].nbrCaisse   += Number(p.nombreCaisse)|| 0;
+    byOperatrice[key].nbrCaisse   += caisses;
+    
+    if (caisses > 0) {
+      let mf = DB.get('moyenfrais').find(m => m.dateProduction === p.dateProduction && String(m.groupe) === String(p.groupe));
+      if (!mf) mf = DB.get('moyenfrais').find(m => m.dateProduction === p.dateProduction);
+      if (mf && mf.moyenFrais) {
+        byOperatrice[key].fraisIndividuel += caisses * Number(mf.moyenFrais);
+      }
+    }
   });
 
   const totalCuit    = cuit.reduce((s, c) => s + (Number(c.poidsGrille) || 0), 0);
@@ -177,13 +212,13 @@ function computeResultats(filterDate, filterGroupe) {
   const totalFilet   = Object.values(byOperatrice).reduce((s, o) => s + o.poidsFilet, 0);
   const totalCaisses = Object.values(byOperatrice).reduce((s, o) => s + o.nbrCaisse, 0);
   let totalFrais = preciseFilter
-    ? totalFraisFor(filterDate, filterGroupe)
-    : sumTotalFrais(filterDate, filterGroupe);
+    ? totalFraisFor(filterDateStart, filterGroupe)
+    : sumTotalFrais(filterDateStart, filterGroupe, filterDateEnd);
 
   // Fallback: If totalFrais is 0 but we have a Moyen Frais rate and caisses, compute it
-  if (!totalFrais && filterDate) {
-    let fallbackMf = DB.get('moyenfrais').find(m => m.dateProduction === filterDate && (!filterGroupe || String(m.groupe) === String(filterGroupe)));
-    if (!fallbackMf) fallbackMf = DB.get('moyenfrais').find(m => m.dateProduction === filterDate);
+  if (!totalFrais && filterDateStart && !filterDateEnd) {
+    let fallbackMf = DB.get('moyenfrais').find(m => m.dateProduction === filterDateStart && (!filterGroupe || String(m.groupe) === String(filterGroupe)));
+    if (!fallbackMf) fallbackMf = DB.get('moyenfrais').find(m => m.dateProduction === filterDateStart);
     if (fallbackMf && fallbackMf.moyenFrais) {
       totalFrais = totalCaisses * Number(fallbackMf.moyenFrais);
     }
@@ -191,16 +226,12 @@ function computeResultats(filterDate, filterGroupe) {
 
   const rows = Object.values(byOperatrice).map(data => {
     const heuresOp = data.num !== null
-      ? heuresRows.filter(h => h.num === data.num && String(h.groupe) === String(data.groupe)).reduce((s, h) => s + (Number(h.heures) || 0), 0)
+      ? heuresRows.filter(h => normalizeOperatriceNum(h.num) === normalizeOperatriceNum(data.num) && String(h.groupe) === String(data.groupe)).reduce((s, h) => s + (Number(h.heures) || 0), 0)
       : 0;
     const kph      = heuresOp ? (data.poidsFilet / heuresOp) : null;
     let yieldVal = null;
-    if (filterDate && data.nbrCaisse > 0) {
-      let mf = DB.get('moyenfrais').find(m => m.dateProduction === filterDate && String(m.groupe) === String(data.groupe));
-      if (!mf) mf = DB.get('moyenfrais').find(m => m.dateProduction === filterDate);
-      if (mf && mf.moyenFrais) {
-        yieldVal = data.poidsFilet / data.nbrCaisse / mf.moyenFrais;
-      }
+    if (data.fraisIndividuel > 0) {
+      yieldVal = data.poidsFilet / data.fraisIndividuel;
     }
     return { operatrice: data.operatrice, groupe: data.groupe,
              poidsFilet: data.poidsFilet, nbrCaisse: data.nbrCaisse,
@@ -238,9 +269,9 @@ function totalFraisFor(dateProduction, groupe) {
   return m ? (Number(m.totalFrais) || 0) : null;
 }
 
-function sumTotalFrais(filterDate, filterGroupe) {
+function sumTotalFrais(filterDateStart, filterGroupe, filterDateEnd = null) {
   const rows = DB.get('moyenfrais').filter(m =>
-    (!filterDate || m.dateProduction === filterDate) &&
+    isDateMatch(m.dateProduction, filterDateStart, filterDateEnd) &&
     (!filterGroupe || String(m.groupe) === String(filterGroupe))
   );
   if (!rows.length) return null;
@@ -261,7 +292,7 @@ function computePertesDashboard(filterDate, filterGroupe) {
   return {
     perteEau, dechetTotal, totalFrais, cuitTotal,
     pctPerteEau: totalFrais ? (perteEau / totalFrais * 100) : null,
-    pctDechets : totalFrais ? ((dechetTotal / totalFrais) * 100) : null
+    pctDechets : totalFrais ? ((dechetTotal / totalFrais) ) : null
   };
 }
 
@@ -368,7 +399,9 @@ setInterval(async () => {
   if (typeof renderLots === 'function') renderLots();
   if (typeof renderCuit === 'function') renderCuit();
   if (typeof renderDechets === 'function') renderDechets();
-  if (typeof renderOps === 'function') renderOps();
+  if (typeof renderOps === 'function' && currentEditId === null) {
+    renderOps();
+}
   if (typeof renderRendement === 'function') renderRendement();
   if (typeof renderCertificats === 'function') renderCertificats();
   if (typeof renderFrais === 'function') renderFrais();

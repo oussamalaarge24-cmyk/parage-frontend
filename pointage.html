@@ -13,8 +13,8 @@
 
 <div class="page">
   <div class="page-head">
-    <div class="eyebrow">Rôle · Agent de pointage</div>
-    <h1>Pointage par badge horaire</h1>
+    <div class="eyebrow"></div>
+    <h1></h1>
     <p>Une opératrice peut sortir et rentrer plusieurs fois dans la journée (pause, sortie ponctuelle...) — jusqu'à 3 cycles Entrée / Sortie sont disponibles par numéro. Le total d'heures est calculé automatiquement.</p>
   </div>
 
@@ -34,7 +34,7 @@
       </div>
       <div class="field">
         <label>Rechercher par jeton (N°)</label>
-        <input type="number" id="h-search" placeholder="12" oninput="filterGrid()">
+        <input type="text" id="h-search" placeholder="12 ou c10" oninput="filterGrid()">
       </div>
     </div>
   </div>
@@ -45,7 +45,7 @@
       <table>
         <thead>
           <tr>
-            <th rowspan="2">Num</th>
+            <th rowspan="2">Num / Opératrice</th>
             <th colspan="2">Cycle 1</th>
             <th colspan="2">Cycle 2</th>
             <th colspan="2">Cycle 3</th>
@@ -89,18 +89,19 @@ function buildGrid(){
   const groupe = Number(document.getElementById('h-groupe').value);
   const dateprod = document.getElementById('h-dateprod').value;
   const existing = DB.get('heures').filter(h => h.dateProduction===dateprod && h.groupe===groupe);
-  const ops = DB.get('operatrice').filter(o => o.groupe === groupe).sort((a,b)=>a.num-b.num);
+  const ops = DB.get('operatrice').filter(o => o.groupe === groupe).sort((a,b)=>compareOperatriceNums(a.num, b.num));
 
   document.getElementById('grid-body').innerHTML = ops.length ? ops.map(o => {
-    const prev = existing.find(e => e.num === o.num) || {};
+    const prev = existing.find(e => normalizeOperatriceNum(e.num) === normalizeOperatriceNum(o.num)) || {};
+    const safeNum = String(o.num).replace(/'/g, "\\'");
     return `<tr data-num="${o.num}">
-      <td>N° ${o.num}</td>
-      <td><input type="time" class="in-e1" value="${prev.entree1||''}" onchange="recalcRow(${o.num})"></td>
-      <td><input type="time" class="in-s1" value="${prev.sortie1||''}" onchange="recalcRow(${o.num})"></td>
-      <td><input type="time" class="in-e2" value="${prev.entree2||''}" onchange="recalcRow(${o.num})"></td>
-      <td><input type="time" class="in-s2" value="${prev.sortie2||''}" onchange="recalcRow(${o.num})"></td>
-      <td><input type="time" class="in-e3" value="${prev.entree3||''}" onchange="recalcRow(${o.num})"></td>
-      <td><input type="time" class="in-s3" value="${prev.sortie3||''}" onchange="recalcRow(${o.num})"></td>
+      <td>N° ${o.num} · ${o.nomPrenom || '—'}</td>
+      <td><input type="time" class="in-e1" value="${prev.entree1||''}" onchange="recalcRow('${safeNum}')"></td>
+      <td><input type="time" class="in-s1" value="${prev.sortie1||''}" onchange="recalcRow('${safeNum}')"></td>
+      <td><input type="time" class="in-e2" value="${prev.entree2||''}" onchange="recalcRow('${safeNum}')"></td>
+      <td><input type="time" class="in-s2" value="${prev.sortie2||''}" onchange="recalcRow('${safeNum}')"></td>
+      <td><input type="time" class="in-e3" value="${prev.entree3||''}" onchange="recalcRow('${safeNum}')"></td>
+      <td><input type="time" class="in-s3" value="${prev.sortie3||''}" onchange="recalcRow('${safeNum}')"></td>
       <td class="out-heures">${prev.heures ? fmt(prev.heures,2) : '—'}</td>
     </tr>`;
   }).join('') : `<tr class="empty-row"><td colspan="8">Aucune opératrice dans ce groupe</td></tr>`;
@@ -122,9 +123,9 @@ function recalcRow(num){
 }
 
 function filterGrid(){
-  const q = document.getElementById('h-search').value.trim();
+  const q = normalizeOperatriceNum(document.getElementById('h-search').value);
   document.querySelectorAll('#grid-body tr[data-num]').forEach(tr => {
-    tr.style.display = (!q || tr.dataset.num === q) ? '' : 'none';
+    tr.style.display = (!q || normalizeOperatriceNum(tr.dataset.num) === q) ? '' : 'none';
   });
 }
 
@@ -134,8 +135,8 @@ async function saveAll(){
 
   const records = [];
   document.querySelectorAll('#grid-body tr[data-num]').forEach(tr => {
-    const num = Number(tr.dataset.num);
-    const op = DB.get('operatrice').find(o=>o.num===num && o.groupe===groupe);
+    const num = normalizeOperatriceNum(tr.dataset.num);
+    const op = DB.get('operatrice').find(o=>normalizeOperatriceNum(o.num)===num && o.groupe===groupe);
     const entree1 = tr.querySelector('.in-e1').value, sortie1 = tr.querySelector('.in-s1').value;
     const entree2 = tr.querySelector('.in-e2').value, sortie2 = tr.querySelector('.in-s2').value;
     const entree3 = tr.querySelector('.in-e3').value, sortie3 = tr.querySelector('.in-s3').value;

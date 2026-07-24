@@ -13,8 +13,8 @@
 
 <div class="page">
   <div class="page-head">
-    <div class="eyebrow">Rôle · Agent de pesée</div>
-    <h1>Saisie de la production</h1>
+    <div class="eyebrow"></div>
+    <h1></h1>
     <p>Tapez le numéro de jeton de l'opératrice et rattachez le poids filet au lot en cours — sélectionné par défaut sur le dernier lot reçu.</p>
   </div>
 
@@ -29,7 +29,7 @@
       </div>
       <div class="field">
         <label>Opératrice (numéro de jeton)</label>
-        <input type="number" id="p-numero" placeholder="12" onchange="syncGroupe()">
+        <input type="text" id="p-numero" placeholder="12 ou c10" onchange="syncGroupe()">
       </div>
     </div>
 
@@ -72,8 +72,8 @@ document.getElementById('dp-display').textContent = computeDateProduction();
 
 let resolvedOp = null;
 function syncGroupe(){
-  const num = Number(document.getElementById('p-numero').value);
-  resolvedOp = DB.get('operatrice').find(o=>o.num===num) || null;
+  const num = normalizeOperatriceNum(document.getElementById('p-numero').value);
+  resolvedOp = DB.get('operatrice').find(o=>normalizeOperatriceNum(o.num)===num) || null;
   if(resolvedOp) document.getElementById('p-groupe').value = resolvedOp.groupe;
 }
 
@@ -87,9 +87,9 @@ function renderTicket(){
 
 async function saveProduction(){
   const idLot = Number(document.getElementById('p-lot').value);
-  const num = Number(document.getElementById('p-numero').value);
+  const num = normalizeOperatriceNum(document.getElementById('p-numero').value);
   const poidsFilet = Number(document.getElementById('p-poids').value)||0;
-  const op = DB.get('operatrice').find(o=>o.num===num) || null;
+  const op = DB.get('operatrice').find(o=>normalizeOperatriceNum(o.num)===num) || null;
   if(!num){ toast('Indiquez le numéro de jeton'); return; }
   if(!op){ toast('Numéro de jeton inconnu'); return; }
   if(!poidsFilet){ toast('Indiquez le poids filet'); return; }

@@ -18,8 +18,7 @@
     <p>Vue de synthèse en lecture seule : rendement (Yield) et productivité (KPH) par groupe et par opératrice.</p>
   </div>
 
-  <div class="readonly-banner">Accès en visualisation seule — aucune saisie ni modification possible depuis cet écran.</div>
-
+  <div class="readonly-banner">
 
   <div class="tabs">
     
@@ -32,8 +31,9 @@
    <div class="tabpanel" id="panel-rendement">
     <div class="card">
       <h2><span class="n">01</span>Filtres</h2>
-      <div class="grid-2">
-        <div class="field"><label>Date</label><input type="date" id="r-date" onchange="renderRendement()"></div>
+      <div class="grid-3">
+        <div class="field"><label>Date début</label><input type="date" id="r-date-start" onchange="renderRendement()"></div>
+        <div class="field"><label>Date fin</label><input type="date" id="r-date-end" onchange="renderRendement()"></div>
         <div class="field"><label>Groupe</label><select id="r-groupe" onchange="renderRendement()">
           <option value="">Tous les groupes</option><option value="1">Groupe 1</option><option value="2">Groupe 2</option>
         </select></div>
@@ -146,9 +146,10 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
 }));
 /* ---------- rendement ---------- */
 function renderRendement(){
-  const date   = document.getElementById('r-date').value;
+  const dateStart = document.getElementById('r-date-start').value;
+  const dateEnd   = document.getElementById('r-date-end').value;
   const groupe = document.getElementById('r-groupe').value;
-  const r = computeResultats(date, groupe);
+  const r = computeResultats(dateStart, groupe, dateEnd);
 
   document.getElementById('r-filet').textContent   = fmt(r.totalFilet) + ' kg';
   document.getElementById('r-kph').textContent     = r.globalKph   !== null ? fmt(r.globalKph,2)   + ' kg/h' : '—';
@@ -161,16 +162,7 @@ function renderRendement(){
   }
 
   document.getElementById('rendement-table').innerHTML = r.rows.length ? r.rows.map(row => {
-    let rowYield = '—';
-    if (date && row.nbrCaisse > 0) {
-      let mfGrp = DB.get('moyenfrais').find(m => m.dateProduction === date && String(m.groupe) === String(row.groupe));
-      if (!mfGrp) mfGrp = DB.get('moyenfrais').find(m => m.dateProduction === date);
-      if (mfGrp && mfGrp.moyenFrais) {
-        rowYield = (row.poidsFilet / row.nbrCaisse / mfGrp.moyenFrais * 100).toFixed(1) + ' %';
-      }
-    } else if (!date && row.nbrCaisse > 0) {
-      rowYield = '—';
-    }
+    let rowYield = row.yieldVal !== null ? (row.yieldVal * 100).toFixed(1) + ' %' : '—';
     return `<tr>
       <td data-label="Opératrice">${row.operatrice}</td>
       <td data-label="Groupe">Grp ${row.groupe}</td>
@@ -283,7 +275,8 @@ window.__renderers.heures = renderHeuresTab;
 window.__renderers.certificats = renderCertificats;
 window.__renderers.rendement = renderRendement;
 window.__renderers.pertes = renderPertes;
-document.getElementById('r-date').value = todayISO();
+document.getElementById('r-date-start').value = todayISO();
+document.getElementById('r-date-end').value = todayISO();
 document.getElementById('c-date').value = todayISO();
 document.getElementById('h-date').value = todayISO();
 

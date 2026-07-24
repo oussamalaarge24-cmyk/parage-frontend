@@ -1,5 +1,5 @@
 /* ===========================================================
-   KPH — Atelier de Parage
+   B — Atelier de Parage
    Design system: cold-processing teal, stamped-ticket signature
    =========================================================== */
 
@@ -11,9 +11,9 @@
   --line:       #d6dcda;
   --line-soft:  #e6eae8;
 
-  --teal:       #0c5c66;
-  --teal-dark:  #073c44;
-  --teal-tint:  #e3eeee;
+  --teal:       #0b438c;
+  --teal-dark:  #08326a;
+  --teal-tint:  #e6f0fa;
 
   --amber:      #c98a2e;
   --amber-tint: #faf1de;
@@ -370,67 +370,67 @@ td input[type="number"]{ min-height:36px; padding:6px 8px; font-size:14px; }
   cursor:not-allowed;
   transform:none !important;
 }
-
+/*
 /* ============================================================
    RESPONSIVE — TABLET  (≤ 900px)
-   ============================================================ */
+   ============================================================ 
 @media (max-width: 900px) {
   .page{ padding:20px 16px 48px; }
 
-  /* Topbar: hide sub-label, keep brand + actions */
+  /* Topbar: hide sub-label, keep brand + actions 
   .topbar{ padding:12px 16px; gap:10px; flex-wrap:wrap; }
   .topbar .brand .sub{ display:none; }
   .topbar .brand .mark{ font-size:20px; }
 
-  /* Stats: 2 columns */
+  /* Stats: 2 columns 
   .stats{ grid-template-columns:repeat(2,1fr); gap:12px; }
 
-  /* Grids: 2 cols max */
+  /* Grids: 2 cols max 
   .grid-3{ grid-template-columns:1fr 1fr; }
 
-  /* Role grid: 2 cols */
+  /* Role grid: 2 cols 
   .role-grid{ grid-template-columns:repeat(2,1fr); }
 
-  /* Page title */
+  /* Page title 
   .page-head h1{ font-size:26px; }
 
-  /* Cards tighter */
+  /* Cards tighter 
   .card{ padding:18px 16px; }
 
-  /* Tabs slightly smaller */
+  /* Tabs slightly smaller 
   .tab{ font-size:14px; padding:8px 14px; }
 }
 
 /* ============================================================
    RESPONSIVE — SMALL TABLET / MOBILE  (≤ 640px)
-   ============================================================ */
+   ============================================================ 
 @media (max-width: 640px) {
   .page{ padding:14px 12px 40px; }
 
-  /* Topbar: row, wrapped */
+  /* Topbar: row, wrapped 
   .topbar{ padding:10px 12px; }
   .topbar .brand .mark{ font-size:18px; }
   .topbar .badge{ font-size:11.5px; padding:5px 10px; }
 
-  /* All grids → single column */
+  /* All grids → single column 
   .grid-2,.grid-3{ grid-template-columns:1fr; }
 
-  /* Role grid → single column */
+  /* Role grid → single column 
   .role-grid{ grid-template-columns:1fr; }
 
-  /* Stats → single column */
+  /* Stats → single column 
   .stats{ grid-template-columns:1fr; gap:10px; }
   .stat .value{ font-size:26px; }
 
-  /* Page header */
+  /* Page header 
   .page-head h1{ font-size:22px; }
   .page-head p{ font-size:13.5px; }
 
-  /* Cards */
+  /* Cards 
   .card{ padding:14px 12px; }
   .card h2{ font-size:17px; }
 
-  /* Tabs: horizontal scroll, no wrap */
+  /* Tabs: horizontal scroll, no wrap 
   .tabs{
     overflow-x:auto;
     flex-wrap:nowrap;
@@ -441,24 +441,1021 @@ td input[type="number"]{ min-height:36px; padding:6px 8px; font-size:14px; }
   .tabs::-webkit-scrollbar{ display:none; }
   .tab{ font-size:13.5px; padding:7px 12px; white-space:nowrap; flex-shrink:0; }
 
-  /* Heures header stacks */
+  /* Heures header stacks 
   .heures-card-header{ flex-direction:column; align-items:flex-start; }
   .heures-card-total{ font-size:14px; }
 
-  /* Buttons full-width */
+  /* Buttons full-width 
   .btn-row{ flex-direction:column; }
   .btn-row .btn{ width:100%; text-align:center; }
 
-  /* Toast full-width bottom */
+  /* Toast full-width bottom 
   .toast{ bottom:12px; right:12px; left:12px; text-align:center; }
 }
 
 /* ============================================================
    RESPONSIVE — PHONE  (≤ 400px)
-   ============================================================ */
+   ============================================================ 
 @media (max-width: 400px) {
   .topbar .badge{ display:none; }
   .page-head h1{ font-size:20px; }
   .stat .value{ font-size:22px; }
   .tab{ font-size:12.5px; padding:6px 10px; }
+}*/
+
+
+/* ===========================================================
+   KPH — Atelier de Parage
+   Design system: cold-processing teal, stamped-ticket signature
+   FULLY RESPONSIVE — All devices, all sizes
+   ============================================================ */
+
+   :root {
+    --ink:        #16232a;
+    --ink-soft:   #4b5a60;
+    --bg:         #eef2f1;
+    --surface:    #ffffff;
+    --line:       #d6dcda;
+    --line-soft:  #e6eae8;
+  
+    --teal:       #0b438c;
+    --teal-dark:  #08326a;
+    --teal-tint:  #e6f0fa;
+  
+    --amber:      #c98a2e;
+    --amber-tint: #faf1de;
+  
+    --green:      #2f7a52;
+    --green-tint: #e7f3ea;
+  
+    --red:        #b8442f;
+    --red-tint:   #fbeae6;
+  
+    --radius:     10px;
+    --radius-sm:  6px;
+    --shadow:     0 1px 2px rgba(12,40,44,.06), 0 4px 14px rgba(12,40,44,.05);
+  
+    --font-display: 'Barlow Condensed', sans-serif;
+    --font-body:    'Inter', system-ui, sans-serif;
+    --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.45;
+    min-height: 100vh;
+  }
+  
+  ::selection {
+    background: var(--teal);
+    color: #fff;
+  }
+  
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: .2px;
+    margin: 0;
+  }
+  
+  /* ---------- LAYOUT SHELL ---------- */
+  .topbar {
+    background: var(--teal-dark);
+    color: #eaf3f2;
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 10px rgba(0,0,0,.12);
+    flex-wrap: wrap;
+  }
+  
+  .topbar .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .topbar .brand .mark {
+    font-family: var(--font-display);
+    font-size: clamp(18px, 3vw, 22px);
+    font-weight: 700;
+    letter-spacing: .5px;
+    color: #fff;
+  }
+  
+  .topbar .brand .sub {
+    font-size: clamp(10px, 1.5vw, 12.5px);
+    color: #a9c9c6;
+    font-family: var(--font-mono);
+    letter-spacing: .3px;
+  }
+  
+  .topbar .role-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .topbar .badge {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.22);
+    color: #eaf3f2;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: clamp(11px, 1.5vw, 12.5px);
+    font-weight: 600;
+    letter-spacing: .3px;
+    white-space: nowrap;
+  }
+  
+  .topbar .home-link {
+    font-size: clamp(11px, 1.5vw, 13px);
+    color: #bfe0dd;
+    border: 1px solid rgba(255,255,255,.25);
+    padding: 7px 12px;
+    border-radius: var(--radius-sm);
+  }
+  
+  .topbar .home-link:hover {
+    background: rgba(255,255,255,.08);
+  }
+  
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(16px, 3vw, 26px) clamp(12px, 2vw, 20px) clamp(40px, 6vw, 60px);
+  }
+  
+  .page-head {
+    margin-bottom: clamp(14px, 2vw, 22px);
+  }
+  
+  .page-head .eyebrow {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.2vw, 12px);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--teal);
+    font-weight: 600;
+  }
+  
+  .page-head h1 {
+    font-size: clamp(22px, 4vw, 30px);
+    margin-top: 4px;
+    word-wrap: break-word;
+  }
+  
+  .page-head p {
+    color: var(--ink-soft);
+    margin-top: 6px;
+    font-size: clamp(13px, 1.8vw, 14.5px);
+    max-width: 640px;
+  }
+  
+  /* ---------- CARDS / SECTIONS ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: clamp(14px, 2vw, 22px);
+    margin-bottom: clamp(14px, 2vw, 20px);
+    overflow: hidden;
+  }
+  
+  .card h2 {
+    font-size: clamp(16px, 2.5vw, 19px);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  
+  .card h2 .n {
+    color: var(--teal);
+    margin-right: 6px;
+  }
+  
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+  }
+  
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+  }
+  
+  /* ---------- FORMS ---------- */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  
+  .field label {
+    font-size: clamp(11px, 1.2vw, 12.5px);
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+  
+  input, select, textarea {
+    font-family: var(--font-body);
+    font-size: clamp(14px, 1.8vw, 15.5px);
+    padding: clamp(10px, 1.2vw, 11px) clamp(10px, 1.5vw, 12px);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    color: var(--ink);
+    min-height: 44px;
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  input:focus, select:focus, textarea:focus {
+    outline: 2.5px solid var(--teal);
+    outline-offset: 1px;
+    border-color: var(--teal);
+  }
+  
+  input[type="number"] {
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+  
+  .btn {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: clamp(13px, 1.5vw, 14.5px);
+    padding: clamp(10px, 1.2vw, 12px) clamp(14px, 2vw, 20px);
+    border-radius: var(--radius-sm);
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    min-height: 46px;
+    min-width: 44px;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-primary {
+    background: var(--teal);
+    color: #fff;
+  }
+  
+  .btn-primary:hover {
+    background: var(--teal-dark);
+  }
+  
+  .btn-secondary {
+    background: #fff;
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  
+  .btn-secondary:hover {
+    border-color: var(--ink-soft);
+  }
+  
+  .btn-danger {
+    background: var(--red-tint);
+    color: var(--red);
+    border-color: #f0cfc6;
+  }
+  
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  
+  .btn:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+  }
+  
+  /* ---------- TABS ---------- */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  
+  .tab {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(13px, 1.8vw, 15px);
+    letter-spacing: .3px;
+    padding: clamp(7px, 1vw, 9px) clamp(12px, 1.8vw, 16px);
+    border-radius: 999px;
+    border: 1.5px solid var(--line);
+    background: #fff;
+    color: var(--ink-soft);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  
+  .tab.active {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: #fff;
+  }
+  
+  .tabpanel {
+    display: none;
+  }
+  
+  .tabpanel.active {
+    display: block;
+  }
+  
+  /* ---------- STAMPED TICKET ---------- */
+  .ticket {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--teal-tint);
+    border: 1.5px dashed var(--teal);
+    border-radius: 8px;
+    padding: 8px 14px;
+    transform: rotate(-1deg);
+    font-family: var(--font-mono);
+    font-size: clamp(11px, 1.5vw, 13px);
+    color: var(--teal-dark);
+    font-weight: 700;
+    letter-spacing: .3px;
+    flex-wrap: wrap;
+  }
+  
+  .ticket .lbl {
+    font-family: var(--font-body);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: clamp(9px, 1vw, 10.5px);
+    letter-spacing: .6px;
+    color: var(--ink-soft);
+  }
+  
+  /* ---------- TABLES ---------- */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: clamp(12px, 1.5vw, 13.5px);
+    min-width: 520px;
+  }
+  
+  thead th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.2vw, 11px);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--ink-soft);
+    background: var(--line-soft);
+    padding: clamp(8px, 1vw, 10px) clamp(8px, 1.5vw, 12px);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  
+  tbody td {
+    padding: clamp(7px, 1vw, 9px) clamp(8px, 1.5vw, 12px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+  
+  tbody tr:hover {
+    background: var(--teal-tint);
+  }
+  
+  /* ---------- RESPONSIVE TABLES ---------- */
+  @media (max-width: 600px) {
+    .table-wrap {
+      border: none;
+      border-radius: 0;
+      overflow-x: visible;
+    }
+    
+    table {
+      min-width: unset;
+      width: 100%;
+    }
+    
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
+    
+    thead {
+      display: none;
+    }
+    
+    tbody tr {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+      padding: 12px 0;
+      background: var(--surface);
+    }
+    
+    tbody td {
+      border: none;
+      position: relative;
+      padding: 6px 12px 6px 50%;
+      text-align: right;
+      min-height: 38px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    tbody td:before {
+      content: attr(data-label);
+      position: absolute;
+      left: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: clamp(9px, 1.2vw, 10px);
+      color: var(--ink-soft);
+      text-align: left;
+    }
+    
+    tbody td input[type="number"] {
+      width: 80px;
+      min-height: 32px;
+    }
+  }
+  
+  /* ---------- STATS ---------- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: clamp(10px, 1.5vw, 14px);
+    margin-bottom: 20px;
+  }
+  
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: clamp(12px, 1.5vw, 16px) clamp(12px, 1.8vw, 18px);
+    box-shadow: var(--shadow);
+    min-width: 0;
+  }
+  
+  .stat .label {
+    font-size: clamp(10px, 1.2vw, 11.5px);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  
+  .stat .value {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 3.5vw, 30px);
+    font-weight: 700;
+    margin-top: 4px;
+    color: var(--teal-dark);
+    word-wrap: break-word;
+  }
+  
+  /* ---------- FOOTER ---------- */
+  footer.foot {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: clamp(11px, 1.2vw, 12px);
+    padding: clamp(20px, 3vw, 30px) 0 clamp(8px, 1vw, 10px);
+  }
+  
+  /* ---------- TOAST ---------- */
+  .toast {
+    position: fixed;
+    bottom: clamp(16px, 2vw, 22px);
+    right: clamp(16px, 2vw, 22px);
+    left: clamp(16px, 2vw, 22px);
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    background: var(--teal-dark);
+    color: #eaf3f2;
+    padding: clamp(10px, 1.5vw, 12px) clamp(14px, 2vw, 18px);
+    border-radius: var(--radius-sm);
+    font-size: clamp(13px, 1.5vw, 14px);
+    font-weight: 500;
+    box-shadow: 0 6px 20px rgba(0,0,0,.2);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .25s ease, transform .25s ease;
+    pointer-events: none;
+    z-index: 50;
+  }
+  
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* ---------- PILLS ---------- */
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: clamp(10px, 1.2vw, 12px);
+    font-weight: 600;
+  }
+  
+  .pill-teal {
+    background: var(--teal-tint);
+    color: var(--teal-dark);
+  }
+  
+  .pill-amber {
+    background: var(--amber-tint);
+    color: var(--amber);
+  }
+  
+  .pill-green {
+    background: var(--green-tint);
+    color: var(--green);
+  }
+  
+  /* ---------- READONLY BANNER ---------- */
+  .readonly-banner {
+    background: var(--amber-tint);
+    border: 1px solid #ecd9b3;
+    color: #8a5f1e;
+    padding: clamp(8px, 1vw, 10px) clamp(10px, 1.5vw, 14px);
+    border-radius: var(--radius-sm);
+    font-size: clamp(12px, 1.5vw, 13.5px);
+    margin-bottom: 18px;
+    font-weight: 500;
+  }
+  
+  /* ---------- HINT ---------- */
+  .hint {
+    font-size: clamp(11px, 1.3vw, 12.5px);
+    color: var(--ink-soft);
+    margin-top: -6px;
+    margin-bottom: 14px;
+  }
+  
+  /* ---------- TABLE INPUT ---------- */
+  td input[type="number"] {
+    min-height: 36px;
+    padding: 6px 8px;
+    font-size: clamp(12px, 1.5vw, 14px);
+  }
+  
+  .empty-row td {
+    color: var(--ink-soft);
+    font-style: italic;
+    text-align: center;
+    padding: 22px;
+  }
+  
+  /* ---------- STAT VALUE COLOURS ---------- */
+  .stat .value.warn {
+    color: var(--amber);
+  }
+  
+  .stat .value.good {
+    color: var(--green);
+  }
+  
+  /* ---------- HOME ROLE GRID ---------- */
+  .role-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: clamp(12px, 1.8vw, 16px);
+  }
+  
+  .role-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: clamp(14px, 2vw, 20px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  
+  .role-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(12,40,44,.1);
+  }
+  
+  .role-card .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    background: var(--teal);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(16px, 2vw, 18px);
+    flex-shrink: 0;
+  }
+  
+  .role-card h3 {
+    font-size: clamp(16px, 2.2vw, 19px);
+  }
+  
+  .role-card p {
+    color: var(--ink-soft);
+    font-size: clamp(12px, 1.5vw, 13.5px);
+    margin: 0;
+    flex: 1;
+  }
+  
+  .role-card .go {
+    font-size: clamp(12px, 1.5vw, 13px);
+    font-weight: 700;
+    color: var(--teal-dark);
+  }
+  
+  /* ---------- HEURES CARD HEADER ---------- */
+  .heures-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  
+  .heures-card-header h2 {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  
+  .heures-card-total {
+    font-weight: 600;
+    font-size: clamp(14px, 1.8vw, 16px);
+    white-space: nowrap;
+  }
+  
+  /* ---------- LOGIN PAGE ---------- */
+  .login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    padding: 20px;
+  }
+  
+  .login-page .card {
+    max-width: 420px;
+    width: 100%;
+    margin: 0;
+  }
+  
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(12,92,102,.1);
+  }
+  
+  .btn-primary:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+  
+  /* ============================================================
+     RESPONSIVE — TABLET (≤ 900px)
+     ============================================================ */
+  @media (max-width: 900px) {
+    .topbar {
+      padding: 12px 16px;
+      gap: 10px;
+    }
+    
+    .topbar .brand .sub {
+      display: none;
+    }
+    
+    .topbar .brand .mark {
+      font-size: 20px;
+    }
+    
+    .stats {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .grid-3 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .role-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .page-head h1 {
+      font-size: 26px;
+    }
+    
+    .card {
+      padding: 18px 16px;
+    }
+    
+    .tab {
+      font-size: 14px;
+      padding: 8px 14px;
+    }
+  }
+  
+  /* ============================================================
+     RESPONSIVE — MOBILE (≤ 600px)
+     ============================================================ */
+  @media (max-width: 600px) {
+    .topbar {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 12px 16px;
+    }
+    
+    .topbar .brand {
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    .topbar .role-chip {
+      width: 100%;
+      justify-content: flex-start;
+    }
+    
+    .topbar .badge {
+      font-size: 11px;
+      padding: 4px 10px;
+    }
+    
+    .topbar .home-link {
+      font-size: 12px;
+      padding: 5px 10px;
+    }
+    
+    .stats {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    
+    .grid-2 {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    
+    .grid-3 {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    
+    .role-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    
+    .page-head h1 {
+      font-size: 22px;
+    }
+    
+    .page-head p {
+      font-size: 13px;
+    }
+    
+    .card {
+      padding: 14px 12px;
+      border-radius: 8px;
+    }
+    
+    .tab {
+      font-size: 13px;
+      padding: 6px 12px;
+      white-space: nowrap;
+    }
+    
+    .tabs {
+      gap: 4px;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+    }
+    
+    .btn {
+      font-size: 13px;
+      padding: 10px 16px;
+      min-height: 40px;
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .btn-row {
+      flex-direction: column;
+    }
+    
+    .btn-row .btn {
+      width: 100%;
+    }
+    
+    .heures-card-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .heures-card-total {
+      white-space: normal;
+    }
+    
+    .ticket {
+      transform: rotate(0deg);
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .stat .value {
+      font-size: 24px;
+    }
+    
+    .login-page .card {
+      padding: 16px;
+    }
+    
+    .toast {
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      max-width: none;
+      font-size: 13px;
+    }
+  }
+  
+  /* ============================================================
+     RESPONSIVE — SMALL MOBILE (≤ 400px)
+     ============================================================ */
+  @media (max-width: 400px) {
+    .page {
+      padding: 12px 10px 30px;
+    }
+    
+    .topbar {
+      padding: 10px 12px;
+    }
+    
+    .topbar .brand .mark {
+      font-size: 17px;
+    }
+    
+    .topbar .badge {
+      font-size: 10px;
+      padding: 3px 8px;
+    }
+    
+    .card {
+      padding: 12px 10px;
+    }
+    
+    .card h2 {
+      font-size: 16px;
+    }
+    
+    .stat {
+      padding: 10px 12px;
+    }
+    
+    .stat .value {
+      font-size: 20px;
+    }
+    
+    input, select, textarea {
+      font-size: 14px;
+      padding: 8px 10px;
+      min-height: 38px;
+    }
+    
+    .btn {
+      font-size: 12px;
+      padding: 8px 14px;
+      min-height: 36px;
+    }
+    
+    .tab {
+      font-size: 12px;
+      padding: 5px 10px;
+    }
+    
+    .page-head h1 {
+      font-size: 20px;
+    }
+    
+    .role-card {
+      padding: 12px;
+    }
+    
+    .role-card .icon {
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
+    }
+    
+    .role-card h3 {
+      font-size: 16px;
+    }
+  }
+  
+  /* ============================================================
+     UTILITY — IMAGES & MEDIA
+     ============================================================ */
+  img, svg, video {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* ============================================================
+     UTILITY — PRINT (optimized for printing)
+     ============================================================ */
+  @media print {
+    .topbar {
+      position: static;
+      box-shadow: none;
+    }
+    
+    .btn, .tab {
+      display: none;
+    }
+    
+    .card {
+      box-shadow: none;
+      border: 1px solid #ccc;
+      break-inside: avoid;
+    }
+    
+    body {
+      background: #fff;
+      font-size: 12px;
+    }
+    
+    .page {
+      max-width: 100%;
+      padding: 20px;
+    }
+  }
+
+/* Responsive topbar sizing */
+@media (max-width: 900px) {
+  .topbar .brand .mark { font-size: 24px !important; }
+  .topbar > span[style*="padding-left"] { font-size: 24px !important; padding-left: 20px !important; }
+}
+@media (max-width: 600px) {
+  .topbar .brand .mark { font-size: 20px !important; }
+  .topbar > span[style*="padding-left"] { font-size: 20px !important; padding-left: 0 !important; align-self: flex-start; }
 }

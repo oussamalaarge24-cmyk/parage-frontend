@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Administrateur — KPH</title>
+<title>Administrateur — B</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
@@ -12,10 +12,14 @@
 <div id="topbar-slot"></div>
 
 <div class="page">
-  <div class="page-head">
-    <div class="eyebrow">Rôle · Administrateur</div>
-    <h1>Utilisateurs, opératrices &amp; tous les résultats</h1>
-    <p>L'administrateur centralise la gestion des comptes, des opératrices, et l'ensemble des tableaux de bord (rendement, certificats, moyen frais, pertes).</p>
+  <div class="page-head" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap;">
+    <div>
+      <div class="eyebrow"></div>
+      <h1>Utilisateurs, opératrices &amp; tous les résultats</h1>
+      <p>L'administrateur centralise la gestion des comptes, des opératrices, et l'ensemble des 
+tableaux de bord (rendement, certificats, moyen frais, pertes).</p>
+    </div>
+     
   </div>
 
   <div class="tabs">
@@ -49,7 +53,14 @@
       <div class="btn-row"><button class="btn btn-primary" onclick="addUser()">Créer le compte</button></div>
     </div>
     <div class="card">
-      <h2><span class="n">·</span>Comptes existants</h2>
+      <div class="card-header-with-export">
+        <h2><span class="n">·</span>Comptes existants</h2>
+        <div class="export-buttons">
+          <button class="btn btn-export" onclick="exportTable('users', 'xlsx')">📊 Excel</button>
+          <button class="btn btn-export" onclick="exportTable('users', 'csv')">📄 CSV</button>
+          <button class="btn btn-export" onclick="exportTable('users', 'txt')">📝 TXT</button>
+        </div>
+      </div>
       <div class="table-wrap">
         <table><thead><tr><th>Nom</th><th>Rôle</th><th></th></tr></thead><tbody id="users-table"></tbody></table>
       </div>
@@ -63,15 +74,25 @@
       <div class="grid-3">
         <div class="field"><label>Nom et prénom</label><input type="text" id="o-nom" placeholder="EL HAJJI ZEHRA"></div>
         <div class="field"><label>Matricule</label><input type="text" id="o-matricule" placeholder="MAT-1023"></div>
-        <div class="field"><label>Numéro (jeton)</label><input type="number" id="o-num" placeholder="31"></div>
+        <div class="field"><label>Numéro (jeton)</label><input type="text" id="o-num" placeholder="31 ou c10"></div>
       </div>
-      <div class="field" style="max-width:220px"><label>Groupe</label><select id="o-groupe"><option value="1">Groupe 1</option><option value="2">Groupe 2</option></select></div>
+      <div class="grid-2">
+        <div class="field"><label>Groupe</label><select id="o-groupe"><option value="1">Groupe 1</option><option value="2">Groupe 2</option></select></div>
+        <div class="field"><label>Services (séparés par virgule)</label><input type="text" id="o-services" placeholder="Parage, Conditionnement"></div>
+      </div>
       <div class="btn-row"><button class="btn btn-primary" onclick="addOp()">Ajouter</button></div>
     </div>
     <div class="card">
-      <h2><span class="n">·</span>Effectif complet</h2>
+      <div class="card-header-with-export">
+        <h2><span class="n">·</span>Effectif complet</h2>
+        <div class="export-buttons">
+          <button class="btn btn-export" onclick="exportTable('operatrices', 'xlsx')">📊 Excel</button>
+          <button class="btn btn-export" onclick="exportTable('operatrices', 'csv')">📄 CSV</button>
+          <button class="btn btn-export" onclick="exportTable('operatrices', 'txt')">📝 TXT</button>
+        </div>
+      </div>
       <div class="table-wrap">
-        <table><thead><tr><th>Num</th><th>Nom et prénom</th><th>Matricule</th><th>Groupe</th><th></th></tr></thead><tbody id="ops-table"></tbody></table>
+        <table><thead><tr><th>Num</th><th>Nom et prénom</th><th>Matricule</th><th>Groupe</th><th>Services</th><th></th></tr></thead><tbody id="ops-table"></tbody></table>
       </div>
     </div>
   </div>
@@ -81,7 +102,8 @@
     <div class="card">
       <h2><span class="n">01</span>Filtres</h2>
       <div class="grid-2">
-        <div class="field"><label>Date</label><input type="date" id="r-date" onchange="renderRendement()"></div>
+        <div class="field"><label>Date début</label><input type="date" id="r-date-start" onchange="renderRendement()"></div>
+        <div class="field"><label>Date fin</label><input type="date" id="r-date-end" onchange="renderRendement()"></div>
         <div class="field"><label>Groupe</label><select id="r-groupe" onchange="renderRendement()">
           <option value="">Tous les groupes</option><option value="1">Groupe 1</option><option value="2">Groupe 2</option>
         </select></div>
@@ -94,7 +116,14 @@
       <div class="stat"><div class="label">Total caisses</div><div class="value warn" id="r-caisses">—</div></div>
     </div>
     <div class="card">
-      <h2><span class="n">·</span>Détail par opératrice</h2>
+      <div class="card-header-with-export">
+        <h2><span class="n">·</span>Détail par opératrice</h2>
+        <div class="export-buttons">
+          <button class="btn btn-export" onclick="exportTable('rendement', 'xlsx')">📊 Excel</button>
+          <button class="btn btn-export" onclick="exportTable('rendement', 'csv')">📄 CSV</button>
+          <button class="btn btn-export" onclick="exportTable('rendement', 'txt')">📝 TXT</button>
+        </div>
+      </div>
       <p class="hint">KPH = poids filet ÷ heures de l'opératrice. Yield = poids filet ÷ nbr caisses ÷ moyen frais (nécessite un groupe précis et un taux moyen frais défini pour cette date).</p>
       <div class="table-wrap">
         <table>
@@ -117,11 +146,18 @@
       </div>
     </div>
     <div class="card">
-      <h2><span class="n">·</span>Poids par certificat / espèce</h2>
+      <div class="card-header-with-export">
+        <h2><span class="n">·</span>Poids par certificat / espèce</h2>
+        <div class="export-buttons">
+          <button class="btn btn-export" onclick="exportTable('certificats', 'xlsx')">📊 Excel</button>
+          <button class="btn btn-export" onclick="exportTable('certificats', 'csv')">📄 CSV</button>
+          <button class="btn btn-export" onclick="exportTable('certificats', 'txt')">📝 TXT</button>
+        </div>
+      </div>
       <p class="hint">Poids = somme du poids cuit (poids grille) enregistré pour ce certificat.</p>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Certificat</th><th>Espèce</th><th>Poids (kg)</th></tr></thead>
+          <thead><tr><th>Certificat</th><th>Espèce</th><th>Taille</th><th>Poids cuit (kg)</th></tr></thead>
           <tbody id="certificats-table"></tbody>
         </table>
       </div>
@@ -143,7 +179,14 @@
       <div class="btn-row"><button class="btn btn-primary" onclick="saveMoyenFrais()">Enregistrer</button></div>
     </div>
     <div class="card">
-      <h2><span class="n">·</span>Entrées enregistrées</h2>
+      <div class="card-header-with-export">
+        <h2><span class="n">·</span>Entrées enregistrées</h2>
+        <div class="export-buttons">
+          <button class="btn btn-export" onclick="exportTable('moyenfrais', 'xlsx')">📊 Excel</button>
+          <button class="btn btn-export" onclick="exportTable('moyenfrais', 'csv')">📄 CSV</button>
+          <button class="btn btn-export" onclick="exportTable('moyenfrais', 'txt')">📝 TXT</button>
+        </div>
+      </div>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Groupe</th><th>Date production</th><th>Moyen frais</th><th>Total frais</th><th></th></tr></thead>
@@ -166,14 +209,30 @@
       </div>
     </div>
     <div class="stats">
-      <div class="stat"><div class="label">Perte d'eau (frais − cuit)</div><div class="value warn" id="pe-eau">—</div></div>
-      <div class="stat"><div class="label">% perte d'eau / frais</div><div class="value" id="pe-eau-pct">—</div></div>
       <div class="stat"><div class="label">Total déchets (kg)</div><div class="value warn" id="pe-dechets">—</div></div>
       <div class="stat"><div class="label">% déchets / frais</div><div class="value" id="pe-dechets-pct">—</div></div>
+      <div class="stat"><div class="label">% perte d'eau</div><div class="value" id="pe-eau-pct">—</div></div>
     </div>
-    <p class="hint">Perte d'eau = total frais − total cuit. % perte d'eau = perte d'eau ÷ total frais. % déchets = total déchets ÷ total frais. (Total frais défini dans l'onglet Moyen frais.)</p>
+    <div class="card">
+      <div class="card-header-with-export">
+        <h2><span class="n">·</span>Détail des pertes</h2>
+        <div class="export-buttons">
+          <button class="btn btn-export" onclick="exportTable('pertes', 'xlsx')">📊 Excel</button>
+          <button class="btn btn-export" onclick="exportTable('pertes', 'csv')">📄 CSV</button>
+          <button class="btn btn-export" onclick="exportTable('pertes', 'txt')">📝 TXT</button>
+        </div>
+      </div>
+      <p class="hint">Perte d'eau = total frais − total cuit. % perte d'eau = perte d'eau ÷ total frais. % déchets = total déchets ÷ total frais. (Total frais défini dans l'onglet Moyen frais.)</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Groupe</th><th>Date</th><th>Total frais (kg)</th><th>Total cuit (kg)</th><th>Perte eau (kg)</th><th>% Perte eau</th><th>Total déchets (kg)</th><th>% Déchets</th></tr></thead>
+          <tbody id="pertes-table"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
-     <!-- ================= HEURES ================= -->
+  
+  <!-- ================= HEURES ================= -->
   <div class="tabpanel" id="panel-heures">
     <div class="card">
       <h2><span class="n">01</span>Filtres</h2>
@@ -188,9 +247,16 @@
       </div>
     </div>
     <div class="card">
-      <div class="heures-card-header">
-        <h2><span class="n">·</span>Total Heures Travaillées</h2>
-        <div class="heures-card-total">Total : <span id="h-total-heures">—</span> h</div>
+      <div class="card-header-with-export">
+        <div class="heures-card-header">
+          <h2><span class="n">·</span>Total Heures Travaillées</h2>
+          <div class="heures-card-total">Total : <span id="h-total-heures">—</span> h</div>
+        </div>
+        <div class="export-buttons">
+          <button class="btn btn-export" onclick="exportTable('heures', 'xlsx')">📊 Excel</button>
+          <button class="btn btn-export" onclick="exportTable('heures', 'csv')">📄 CSV</button>
+          <button class="btn btn-export" onclick="exportTable('heures', 'txt')">📝 TXT</button>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
@@ -215,11 +281,274 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   document.querySelectorAll('.tabpanel').forEach(x=>x.classList.remove('active'));
   t.classList.add('active');
   document.getElementById('panel-' + t.dataset.tab).classList.add('active');
-  const map = { rendement:renderRendement, certificats:renderCertificats, frais:renderFrais, pertes:renderPertes };
+  const map = { rendement:renderRendement, certificats:renderCertificats, frais:renderFrais, pertes:renderPertes, ops:renderOps, heures:renderHeuresTab };
   if(map[t.dataset.tab]) map[t.dataset.tab]();
 }));
 
 const ROLE_LABELS = { admin:'Administrateur', chef:'Chef de production', pesee:'Agent de pesée', reception:'Agent de réception', pointage:'Agent de pointage', direction:'Directeur' };
+
+// ==================== EXPORT FUNCTIONS ====================
+function getTableData(tableType) {
+  let headers = [];
+  let rows = [];
+  
+  switch(tableType) {
+    case 'users':
+      const users = DB.get('users');
+      headers = ['Nom', 'Rôle'];
+      rows = users.map(u => [u.nom, ROLE_LABELS[u.role] || u.role]);
+      break;
+      
+    case 'operatrices':
+      const ops = DB.get('operatrice').sort((a,b)=>compareOperatriceNums(a.num, b.num));
+      headers = ['Numéro', 'Nom et prénom', 'Matricule', 'Groupe', 'Services'];
+      rows = ops.map(o => [o.num, o.nomPrenom, o.matricule || '—', 'Groupe ' + o.groupe, o.services || '—']);
+      break;
+      
+    case 'rendement':
+      const dateStart = document.getElementById('r-date-start').value;
+      const dateEnd   = document.getElementById('r-date-end').value;
+      const groupe = document.getElementById('r-groupe').value;
+      const r = computeResultats(dateStart, groupe, dateEnd);
+      headers = ['Opératrice', 'Groupe', 'Poids filet (kg)', 'Nbr caisses', 'Heures', 'KPH', 'Yield'];
+      rows = r.rows.map(row => {
+        let rowYield = row.yieldVal !== null ? (row.yieldVal * 100).toFixed(1) + ' %' : '—';
+        return [
+          row.operatrice,
+          'Groupe ' + row.groupe,
+          fmt(row.poidsFilet),
+          row.nbrCaisse,
+          row.heures > 0 ? fmt(row.heures,1) : '—',
+          row.kph !== null ? fmt(row.kph,2) : '—',
+          rowYield
+        ];
+      });
+      break;
+      
+    case 'certificats':
+      const cDate = document.getElementById('c-date').value;
+      const cGroupe = document.getElementById('c-groupe').value;
+      const cuitRows = DB.get('poidscuit').filter(c =>
+        (!cDate || c.dateProduction === cDate) &&
+        (!cGroupe || String(c.groupe) === String(cGroupe))
+      );
+      const byCert = {};
+      cuitRows.forEach(c => {
+        let certKey = c.certificat || null;
+        let espece = c.espece || null;
+        let taille = c.taille || null;
+        if (!certKey && c.idLot) {
+          const lot = DB.get('lot').find(l => l.id === c.idLot);
+          if (lot) { certKey = lot.certificat; espece = lot.espece; taille = lot.taille; }
+        }
+        if (!certKey) certKey = '(sans certificat)';
+        const key = certKey + '|' + (espece || '');
+        if (!byCert[key]) {
+          byCert[key] = { certificat: certKey, espece: espece || '—', taille: taille || '—', poids: 0 };
+        }
+        byCert[key].poids += Number(c.poidsGrille) || 0;
+      });
+      const certRows = Object.values(byCert).sort((a,b) => b.poids - a.poids);
+      headers = ['Certificat', 'Espèce', 'Taille', 'Poids cuit (kg)'];
+      rows = certRows.map(r => [r.certificat, r.espece, r.taille, fmt(r.poids)]);
+      break;
+      
+    case 'moyenfrais':
+      const mfRows = computeMoyenFraisDashboard();
+      headers = ['Groupe', 'Date production', 'Moyen frais', 'Total frais'];
+      rows = mfRows.map(r => ['Groupe ' + r.groupe, r.dateProduction, fmt(r.moyenFrais), fmt(r.totalFrais)]);
+      break;
+      
+    case 'pertes':
+      const peDate = document.getElementById('pe-date').value;
+      const peGroupe = document.getElementById('pe-groupe').value;
+      const p = computePertesDashboard(peDate, peGroupe);
+      // Get total cuit for the date/group
+      const cuitTotal = DB.get('poidscuit')
+        .filter(c => c.dateProduction === peDate && String(c.groupe) === String(peGroupe))
+        .reduce((sum, c) => sum + (Number(c.poidsGrille) || 0), 0);
+      const totalFrais = p.totalFrais || 0;
+      const perteEau = totalFrais - cuitTotal;
+      
+      headers = ['Groupe', 'Date', 'Total frais (kg)', 'Total cuit (kg)', 'Perte eau (kg)', '% Perte eau', 'Total déchets (kg)', '% Déchets'];
+      rows = [[
+        'Groupe ' + peGroupe,
+        peDate,
+        fmt(totalFrais),
+        fmt(cuitTotal),
+        fmt(perteEau),
+        totalFrais > 0 ? ((perteEau / totalFrais) * 100).toFixed(1) + '%' : '—',
+        fmt(p.dechetTotal),
+        p.pctDechets !== null ? fmt(p.pctDechets,1) + '%' : '—'
+      ]];
+      break;
+      
+    case 'heures':
+      const hDate = document.getElementById('h-date').value;
+      const hGroupe = document.getElementById('h-groupe').value;
+      const hService = document.getElementById('h-service').value.trim().toLowerCase();
+      let hRows = DB.get('heures').filter(h => 
+        (!hDate || h.dateProduction === hDate) &&
+        (!hGroupe || String(h.groupe) === String(hGroupe))
+      );
+      const hData = [];
+      hRows.forEach(h => {
+        const op = DB.get('operatrice').find(o => o.num === h.num && String(o.groupe) === String(h.groupe));
+        const opServices = op && op.services ? op.services.toLowerCase() : '';
+        if (hService && !opServices.includes(hService)) return;
+        hData.push({
+          operatrice: op ? op.nomPrenom : h.nomPrenom,
+          num: h.num,
+          groupe: h.groupe,
+          services: op ? op.services : '—',
+          heures: h.heures
+        });
+      });
+      headers = ['Opératrice', 'Numéro', 'Groupe', 'Services', 'Heures'];
+      rows = hData.map(r => [r.operatrice, r.num, r.groupe, r.services, fmt(r.heures,2)]);
+      break;
+      
+    default:
+      return { headers: [], rows: [] };
+  }
+  
+  return { headers, rows };
+}
+
+function exportTable(tableType, format) {
+  const data = getTableData(tableType);
+  if (!data.rows.length) {
+    toast('Aucune donnée à exporter pour ce tableau');
+    return;
+  }
+  
+  const filename = `${tableType}_${new Date().toISOString().slice(0,10)}`;
+  
+  if (format === 'xlsx') {
+    exportToExcel(data.headers, data.rows, filename);
+  } else if (format === 'csv') {
+    exportToCSV(data.headers, data.rows, filename);
+  } else if (format === 'txt') {
+    exportToTXT(data.headers, data.rows, filename);
+  }
+}
+
+function exportToExcel(headers, rows, filename) {
+  // Create XLSX content (HTML table format that Excel can read)
+  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${filename}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+    <style>th,td{border:1px solid #999;padding:4px 8px;font-family:Arial,sans-serif;font-size:12px;} th{background:#f0f0f0;font-weight:bold;}
+</style>
+</head><body><table>`;
+  
+  // Add headers
+  html += '<thead><tr>';
+  headers.forEach(h => html += `<th>${h}</th>`);
+  html += '</tr></thead><tbody>';
+  
+  // Add rows
+  rows.forEach(row => {
+    html += '<tr>';
+    row.forEach(cell => html += `<td>${cell}</td>`);
+    html += '</tr>';
+  });
+  
+  html += '</tbody></table></body></html>';
+  
+  downloadFile(html, filename + '.xls', 'application/vnd.ms-excel');
+  toast('Export Excel terminé');
+}
+
+function exportToCSV(headers, rows, filename) {
+  let csv = '';
+  
+  // Add headers
+  csv += headers.join(',') + '\n';
+  
+  // Add rows
+  rows.forEach(row => {
+    csv += row.map(cell => {
+      if (typeof cell === 'string' && (cell.includes(',') || cell.includes('"') || cell.includes('\n'))) {
+        return `"${cell.replace(/"/g, '""')}"`;
+      }
+      return cell;
+    }).join(',') + '\n';
+  });
+  
+  downloadFile(csv, filename + '.csv', 'text/csv');
+  toast('Export CSV terminé');
+}
+
+function exportToTXT(headers, rows, filename) {
+  let txt = '';
+  
+  // Calculate column widths
+  const colWidths = headers.map((h, i) => {
+    let maxLen = h.length;
+    rows.forEach(row => {
+      const cell = String(row[i] || '');
+      if (cell.length > maxLen) maxLen = cell.length;
+    });
+    return maxLen + 2;
+  });
+  
+  // Create separator line
+  const separator = colWidths.map(w => '-'.repeat(w)).join('+');
+  
+  // Add headers
+  let headerRow = '';
+  headers.forEach((h, i) => {
+    headerRow += h.padEnd(colWidths[i]);
+  });
+  txt += headerRow + '\n';
+  txt += separator + '\n';
+  
+  // Add rows
+  rows.forEach(row => {
+    let rowStr = '';
+    row.forEach((cell, i) => {
+      rowStr += String(cell).padEnd(colWidths[i]);
+    });
+    txt += rowStr + '\n';
+  });
+  
+  downloadFile(txt, filename + '.txt', 'text/plain');
+  toast('Export TXT terminé');
+}
+
+function downloadFile(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType + ';charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+// Define updateServiceOptions before it's used
+function updateServiceOptions() {
+  const select = document.getElementById('h-service');
+  if (!select) return;
+  const currentVal = select.value;
+  const ops = DB.get('operatrice');
+  const servicesSet = new Set();
+  ops.forEach(o => {
+    if (o.services) {
+      o.services.split(',').forEach(s => {
+        const serv = s.trim();
+        if (serv) servicesSet.add(serv);
+      });
+    }
+  });
+  const services = Array.from(servicesSet).sort();
+  let html = '<option value="">Tous les services</option>';
+  services.forEach(s => {
+    html += `<option value="${s}" ${s === currentVal ? 'selected' : ''}>${s}</option>`;
+  });
+  select.innerHTML = html;
+}
 
 /* ---------- users ---------- */
 async function addUser(){
@@ -278,39 +607,158 @@ async function changeUserPassword(userId) {
 }
 
 /* ---------- opératrices ---------- */
+// Track which edit row is currently open
+let currentEditId = null;
+
 async function addOp(){
   const nomPrenom = document.getElementById('o-nom').value.trim();
   if(!nomPrenom){ toast('Le nom est requis'); return; }
+  const num = normalizeOperatriceNum(document.getElementById('o-num').value);
+  if (!num) { toast('Le numéro est requis'); return; }
+  const groupe = Number(document.getElementById('o-groupe').value);
+  const existingOps = DB.get('operatrice');
+  const duplicate = existingOps.find(o => normalizeOperatriceNum(o.num) === num && String(o.groupe) === String(groupe));
+  if (duplicate) {
+    toast('Le numéro ' + num + ' est déjà utilisé dans le Groupe ' + groupe + ' par ' + duplicate.nomPrenom);
+    return;
+  }
   const record = {
     nomPrenom,
     matricule: document.getElementById('o-matricule').value.trim(),
-    num: Number(document.getElementById('o-num').value)||0,
-    groupe: Number(document.getElementById('o-groupe').value)
+    num,
+    groupe,
+    services: document.getElementById('o-services').value.trim()
   };
   const row = await DB.add('operatrice', record);
   await DB.update('operatrice', row.id, { idOperatrice: row.id });
-  ['o-nom','o-matricule','o-num'].forEach(id => document.getElementById(id).value='');
+  ['o-nom','o-matricule','o-num','o-services'].forEach(id => document.getElementById(id).value='');
   toast('Opératrice ajoutée');
   renderOps();
 }
+
 function renderOps(){
-  const rows = DB.get('operatrice').sort((a,b)=>a.num-b.num);
+  const rows = DB.get('operatrice').sort((a,b)=>compareOperatriceNums(a.num, b.num));
   document.getElementById('ops-table').innerHTML = rows.length ? rows.map(o => `
-    <tr>
+    <tr id="op-row-${o.id}">
       <td data-label="Num">${o.num}</td>
       <td data-label="Nom et prénom">${o.nomPrenom}</td>
       <td data-label="Matricule">${o.matricule||'—'}</td>
       <td data-label="Groupe"><span class="pill pill-teal">Groupe ${o.groupe}</span></td>
-      <td><button class="btn btn-danger" data-del="operatrice" data-id="${o.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">Suppr.</button></td>
+      <td data-label="Services">${o.services||'—'}</td>
+      <td>
+        <button class="btn" onclick="openEditOp(${o.id})" style="padding:6px 10px;min-height:32px;font-size:12.5px;margin-right:6px;background:#eef2f2;color:#1a2e2e;border:1px solid #dde8e8;border-radius:4px;cursor:pointer;">✏️ Éditer</button>
+        <button class="btn btn-danger" data-del="operatrice" data-id="${o.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">Suppr.</button>
+      </td>
+    </tr>
+    <tr id="op-edit-${o.id}" style="display:none;background:var(--bg);">
+      <td colspan="6" style="padding:14px 16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div class="field" style="margin:0">
+            <label>Numéro (jeton)</label>
+            <input type="text" id="edit-num-${o.id}" value="${o.num}" placeholder="31 ou c10" class="edit-input" onclick="event.stopPropagation();">
+          </div>
+          <div class="field" style="margin:0">
+            <label>Nom et prénom</label>
+            <input type="text" id="edit-nom-${o.id}" value="${o.nomPrenom.replace(/"/g, '&quot;')}" class="edit-input" onclick="event.stopPropagation();">
+          </div>
+          <div class="field" style="margin:0">
+            <label>Groupe</label>
+            <select id="edit-groupe-${o.id}" class="edit-input" onclick="event.stopPropagation();">
+              <option value="1" ${o.groupe==1?'selected':''}>Groupe 1</option>
+              <option value="2" ${o.groupe==2?'selected':''}>Groupe 2</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Services</label>
+            <input type="text" id="edit-services-${o.id}" value="${(o.services||'').replace(/"/g, '&quot;')}" placeholder="Parage, Conditionnement" class="edit-input" onclick="event.stopPropagation();">
+          </div>
+        </div>
+        <div class="btn-row" style="margin:0;gap:8px;">
+          <button class="btn btn-primary" onclick="saveOpEdit(${o.id})" style="min-height:34px;font-size:13px;">✔ Enregistrer</button>
+          <button class="btn" onclick="cancelOpEdit(${o.id})" style="min-height:34px;font-size:13px;background:#eef2f2;color:#1a2e2e;border:1px solid #dde8e8;">✕ Annuler</button>
+        </div>
+      </td>
     </tr>`
-  ).join('') : `<tr class="empty-row"><td colspan="5">Aucune opératrice</td></tr>`;
+  ).join('') : `<tr class="empty-row"><td colspan="6">Aucune opératrice</td></tr>`;
+
+  updateServiceOptions();
+  
+  // Restore the edit row if one was open
+  if (currentEditId !== null) {
+    const editRow = document.getElementById('op-edit-' + currentEditId);
+    if (editRow) {
+      editRow.style.display = 'table-row';
+    } else {
+      currentEditId = null;
+    }
+  }
+}
+
+// Fixed: Only opens the edit form, never closes it (until cancel or save)
+function openEditOp(id) {
+  // Close any other open edit row
+  if (currentEditId !== null && currentEditId !== id) {
+    const prevEditRow = document.getElementById('op-edit-' + currentEditId);
+    if (prevEditRow) prevEditRow.style.display = 'none';
+  }
+  
+  // Open the new edit row
+  const editRow = document.getElementById('op-edit-' + id);
+  if (editRow) {
+    editRow.style.display = 'table-row';
+    currentEditId = id;
+  }
+}
+
+function cancelOpEdit(id) {
+  const editRow = document.getElementById('op-edit-' + id);
+  if (editRow) {
+    editRow.style.display = 'none';
+    if (currentEditId === id) {
+      currentEditId = null;
+    }
+  }
+}
+
+async function saveOpEdit(id) {
+  const num = normalizeOperatriceNum(document.getElementById('edit-num-' + id).value);
+  const nomPrenom = document.getElementById('edit-nom-' + id).value.trim();
+  const groupe    = Number(document.getElementById('edit-groupe-' + id).value);
+  const services  = document.getElementById('edit-services-' + id).value.trim();
+
+  if (!nomPrenom) { toast('Le nom ne peut pas être vide'); return; }
+  if (!num) { toast('Le numéro ne peut pas être vide'); return; }
+
+  const existingOps = DB.get('operatrice');
+  const duplicate = existingOps.find(o => normalizeOperatriceNum(o.num) === num && String(o.groupe) === String(groupe) && o.id !== id);
+  if (duplicate) {
+    toast('Le numéro ' + num + ' est déjà utilisé dans le Groupe ' + groupe + ' par ' + duplicate.nomPrenom);
+    return;
+  }
+
+  try {
+    await DB.update('operatrice', id, { num, nomPrenom, groupe, services });
+    toast('Opératrice mise à jour');
+    // Close the edit row after saving
+    const editRow = document.getElementById('op-edit-' + id);
+    if (editRow) {
+      editRow.style.display = 'none';
+      if (currentEditId === id) {
+        currentEditId = null;
+      }
+    }
+    renderOps();
+  } catch (err) {
+    toast('Erreur lors de la mise à jour');
+  }
 }
 
 /* ---------- rendement ---------- */
 function renderRendement(){
-  const date   = document.getElementById('r-date').value;
+  const dateStart = document.getElementById('r-date-start').value;
+  const dateEnd   = document.getElementById('r-date-end').value;
   const groupe = document.getElementById('r-groupe').value;
-  const r = computeResultats(date, groupe);
+  const r = computeResultats(dateStart, groupe, dateEnd);
 
   document.getElementById('r-filet').textContent   = fmt(r.totalFilet) + ' kg';
   document.getElementById('r-kph').textContent     = r.globalKph   !== null ? fmt(r.globalKph,2)   + ' kg/h' : '—';
@@ -324,20 +772,7 @@ function renderRendement(){
   }
 
   document.getElementById('rendement-table').innerHTML = r.rows.length ? r.rows.map(row => {
-    // Per-row yield: look up moyenFrais for THIS row's groupe on the selected date
-    let rowYield = '—';
-    if (date && row.nbrCaisse > 0) {
-      // Try exact group match first, then fallback to any group's moyenFrais for the date
-      let mfGrp = DB.get('moyenfrais').find(m => m.dateProduction === date && String(m.groupe) === String(row.groupe));
-      if (!mfGrp) mfGrp = DB.get('moyenfrais').find(m => m.dateProduction === date);
-      
-      if (mfGrp && mfGrp.moyenFrais) {
-        rowYield = (row.poidsFilet / row.nbrCaisse / mfGrp.moyenFrais * 100).toFixed(1) + ' %';
-      }
-    } else if (!date && row.nbrCaisse > 0) {
-      // No date filter — show KPH only, yield needs a date
-      rowYield = '—';
-    }
+    let rowYield = row.yieldVal !== null ? (row.yieldVal * 100).toFixed(1) + ' %' : '—';
     return `<tr>
       <td data-label="Opératrice">${row.operatrice}</td><td data-label="Groupe">Grp ${row.groupe}</td>
       <td data-label="Poids filet">${fmt(row.poidsFilet)} kg</td><td data-label="Caisses">${row.nbrCaisse}</td>
@@ -439,12 +874,36 @@ function renderPertes(){
   const date = document.getElementById('pe-date').value;
   const groupe = document.getElementById('pe-groupe').value;
   const p = computePertesDashboard(date, groupe);
+  
+  // Get total cuit for the date/group
+  const cuitTotal = DB.get('poidscuit')
+    .filter(c => c.dateProduction === date && String(c.groupe) === String(groupe))
+    .reduce((sum, c) => sum + (Number(c.poidsGrille) || 0), 0);
+  
+  const totalFrais = p.totalFrais || 0;
+  const perteEau = totalFrais - cuitTotal;
+  
   document.getElementById('pe-dechets').textContent = fmt(p.dechetTotal) + ' kg';
   document.getElementById('pe-dechets-pct').textContent = p.pctDechets!==null ? fmt(p.pctDechets,1) + ' %' : '—';
   document.getElementById('pe-eau-pct').textContent = p.pctPerteEau!==null ? fmt(p.pctPerteEau,1) + ' %' : '—';
+  
+  // Also render the detailed pertes table
+  document.getElementById('pertes-table').innerHTML = `
+    <tr>
+      <td data-label="Groupe">Groupe ${groupe}</td>
+      <td data-label="Date">${date}</td>
+      <td data-label="Total frais">${fmt(totalFrais)} kg</td>
+      <td data-label="Total cuit">${fmt(cuitTotal)} kg</td>
+      <td data-label="Perte eau">${fmt(perteEau)} kg</td>
+      <td data-label="% Perte eau">${totalFrais > 0 ? ((perteEau / totalFrais) * 100).toFixed(1) + '%' : '—'}</td>
+      <td data-label="Total déchets">${fmt(p.dechetTotal)} kg</td>
+      <td data-label="% Déchets">${p.pctDechets !== null ? fmt(p.pctDechets,1) + '%' : '—'}</td>
+    </tr>
+  `;
 }
 
-document.getElementById('r-date').value = todayISO();
+document.getElementById('r-date-start').value = todayISO();
+document.getElementById('r-date-end').value = todayISO();
 document.getElementById('c-date').value = todayISO();
 document.getElementById('mf-date').value = todayISO();
 document.getElementById('pe-date').value = todayISO();
