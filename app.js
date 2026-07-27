@@ -3,9 +3,10 @@
    Frontend data engine — talks to http://localhost:3000/api
    =========================================================== */
 
-const API_URL = (window.location.port === '3000')
-  ? '/api'                         // served by the backend itself
-  : 'http://localhost:3000/api';   // opened from file:// or different port
+   const API_URL =
+   window.location.hostname === 'localhost'
+     ? 'http://localhost:3000/api'
+     : 'https://parage-backend.vercel.app/api';   // opened from file:// or different port
 
 // ── Auth helpers ───────────────────────────────────────────────
 
