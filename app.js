@@ -10,6 +10,15 @@
 
 // ── Auth helpers ───────────────────────────────────────────────
 
+function getAuthHeaders() {
+  try {
+    const user = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+    const token = user && user.token ? user.token : null;
+    if (token) return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+  } catch {}
+  return { 'Content-Type': 'application/json' };
+}
+
 function getCurrentUser() {
   try { return JSON.parse(sessionStorage.getItem('currentUser') || 'null'); }
   catch { return null; }
@@ -306,7 +315,9 @@ const DB = {
     const tables = ['operatrice','lot','production','poidscuit','dechets','heures','moyenfrais','users'];
     try {
       await Promise.all(tables.map(async (table) => {
-        const res = await fetch(`${API_URL}/${table}`);
+        const res = await fetch(`${API_URL}/${table}`, {
+          headers: getAuthHeaders()
+        });
         if (!res.ok) throw new Error(`${table}: HTTP ${res.status}`);
         this.cache[table] = await res.json();
       }));
@@ -322,7 +333,7 @@ const DB = {
   async add(table, record) {
     const res = await fetch(`${API_URL}/${table}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(record)
     });
     if (!res.ok) throw new Error(`add ${table}: HTTP ${res.status}`);
@@ -335,7 +346,7 @@ const DB = {
   async update(table, id, patch) {
     const res = await fetch(`${API_URL}/${table}/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(patch)
     });
     if (!res.ok) throw new Error(`update ${table}: HTTP ${res.status}`);
@@ -347,7 +358,10 @@ const DB = {
   },
 
   async remove(table, id) {
-    const res = await fetch(`${API_URL}/${table}/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${API_URL}/${table}/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
     if (!res.ok) throw new Error(`remove ${table}: HTTP ${res.status}`);
     this.cache[table] = (this.cache[table] || []).filter(r => r.id !== id);
   },
@@ -360,13 +374,31 @@ const DB = {
   async savePointage(payload) {
     const res = await fetch(`${API_URL}/heures/bulk`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error(`savePointage: HTTP ${res.status}`);
     // Refresh heures cache
-    const r2 = await fetch(`${API_URL}/heures`);
+    const r2 = await fetch(`${API_URL}/heures`, { headers: getAuthHeaders() });
     if (r2.ok) this.cache['heures'] = await r2.json();
+  },
+
+  async saveOnePointage(dateProduction, groupe, record) {
+    const res = await fetch(`${API_URL}/heures/single`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ dateProduction, groupe, record })
+    });
+    if (!res.ok) throw new Error(`saveOnePointage: HTTP ${res.status}`);
+    const saved = await res.json();
+    // Update local cache: replace or add this row
+    if (!this.cache['heures']) this.cache['heures'] = [];
+    const idx = this.cache['heures'].findIndex(
+      h => h.num === saved.num && h.groupe === saved.groupe && h.dateProduction === saved.dateProduction
+    );
+    if (idx > -1) this.cache['heures'][idx] = saved;
+    else this.cache['heures'].push(saved);
+    return saved;
   }
 };
 

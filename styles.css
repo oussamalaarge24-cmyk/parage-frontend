@@ -197,6 +197,23 @@ input[type="number"]{ font-family:var(--font-mono); font-weight:600; }
 .btn-danger{ background:var(--red-tint); color:var(--red); border-color:#f0cfc6; }
 .btn-row{ display:flex; gap:10px; margin-top:6px; flex-wrap: wrap; }
 .btn:disabled{ opacity:.45; cursor:not-allowed; }
+.btn-save-one{
+  padding:4px 10px;
+  font-size:.78rem;
+  font-weight:600;
+  min-height:30px;
+  background:var(--teal);
+  color:#fff;
+  border:none;
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background .15s, transform .1s;
+}
+.btn-save-one:hover{ background:var(--teal-dark); transform:scale(1.04); }
+.btn-save-one:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
+
+
 
 /* ---------- tabs ---------- */
 .tabs{ display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap; }

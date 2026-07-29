@@ -50,6 +50,7 @@
             <th colspan="2">Cycle 2</th>
             <th colspan="2">Cycle 3</th>
             <th rowspan="2">Heures</th>
+            <th rowspan="2">Action</th>
           </tr>
           <tr>
             <th>Entrée</th><th>Sortie</th>
@@ -103,8 +104,9 @@ function buildGrid(){
       <td><input type="time" class="in-e3" value="${prev.entree3||''}" onchange="recalcRow('${safeNum}')"></td>
       <td><input type="time" class="in-s3" value="${prev.sortie3||''}" onchange="recalcRow('${safeNum}')"></td>
       <td class="out-heures">${prev.heures ? fmt(prev.heures,2) : '—'}</td>
+      <td><button class="btn btn-save-one" onclick="saveOne('${safeNum}')" title="Enregistrer cette opératrice">💾 Enregistrer</button></td>
     </tr>`;
-  }).join('') : `<tr class="empty-row"><td colspan="8">Aucune opératrice dans ce groupe</td></tr>`;
+  }).join('') : `<tr class="empty-row"><td colspan="9">Aucune opératrice dans ce groupe</td></tr>`;
   filterGrid();
   renderPointed();
 }
@@ -143,12 +145,15 @@ async function saveAll(){
     let heures = 0;
     [[entree1,sortie1],[entree2,sortie2],[entree3,sortie3]].forEach(([e,s]) => { if(e && s) heures += hoursBetween(e,s); });
 
-    records.push({
-      dateSaisie: todayISO(), dateProduction, groupe, num,
-      nomPrenom: op ? op.nomPrenom : '',
-      entree1, sortie1, entree2, sortie2, entree3, sortie3,
-      heures
-    });
+    const hasAnyTime = entree1 || sortie1 || entree2 || sortie2 || entree3 || sortie3;
+    if (hasAnyTime) {
+      records.push({
+        dateSaisie: todayISO(), dateProduction, groupe, num,
+        nomPrenom: op ? op.nomPrenom : '',
+        entree1, sortie1, entree2, sortie2, entree3, sortie3,
+        heures
+      });
+    }
   });
 
   try {
@@ -157,6 +162,51 @@ async function saveAll(){
     renderPointed();
   } catch(e) {
     toast('Erreur lors de l\'enregistrement');
+  }
+}
+
+async function saveOne(num) {
+  const groupe = Number(document.getElementById('h-groupe').value);
+  const dateProduction = document.getElementById('h-dateprod').value;
+  const tr = document.querySelector(`#grid-body tr[data-num="${num}"]`);
+  if (!tr) return;
+
+  const normalNum = normalizeOperatriceNum(num);
+  const op = DB.get('operatrice').find(o => normalizeOperatriceNum(o.num) === normalNum && o.groupe === groupe);
+
+  const entree1 = tr.querySelector('.in-e1').value;
+  const sortie1 = tr.querySelector('.in-s1').value;
+  const entree2 = tr.querySelector('.in-e2').value;
+  const sortie2 = tr.querySelector('.in-s2').value;
+  const entree3 = tr.querySelector('.in-e3').value;
+  const sortie3 = tr.querySelector('.in-s3').value;
+
+  let heures = 0;
+  [[entree1,sortie1],[entree2,sortie2],[entree3,sortie3]].forEach(([e,s]) => { if(e && s) heures += hoursBetween(e,s); });
+
+  const record = {
+    dateSaisie: todayISO(), dateProduction, groupe, num: normalNum,
+    nomPrenom: op ? op.nomPrenom : '',
+    entree1, sortie1, entree2, sortie2, entree3, sortie3, heures
+  };
+
+  // Visual feedback: disable button while saving
+  const btn = tr.querySelector('.btn-save-one');
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ ...';
+
+  try {
+    await DB.saveOnePointage(dateProduction, groupe, record);
+    btn.textContent = '✅ OK';
+    btn.style.background = 'var(--success, #22c55e)';
+    setTimeout(() => { btn.textContent = origText; btn.style.background = ''; btn.disabled = false; }, 1500);
+    toast(`N° ${num} — ${op ? op.nomPrenom : ''} enregistré(e)`);
+    renderPointed();
+  } catch(e) {
+    btn.textContent = origText;
+    btn.disabled = false;
+    toast('Erreur lors de l\'enregistrement de N° ' + num);
   }
 }
 
