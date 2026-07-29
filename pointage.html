@@ -50,7 +50,6 @@
             <th colspan="2">Cycle 2</th>
             <th colspan="2">Cycle 3</th>
             <th rowspan="2">Heures</th>
-            <th rowspan="2">Action</th>
           </tr>
           <tr>
             <th>Entrée</th><th>Sortie</th>
@@ -62,7 +61,7 @@
       </table>
     </div>
     <div class="btn-row" style="margin-top:14px">
-      <button class="btn btn-primary" onclick="saveAll()">Enregistrer tous les badges</button>
+      <button id="btn-save-selected" class="btn btn-primary" onclick="saveSelected()" disabled>💾 Enregistrer</button>
     </div>
   </div>
 
@@ -86,6 +85,8 @@ checkAuth(['pointage', 'admin']);
 document.getElementById('topbar-slot').outerHTML = buildTopbar('Agent de pointage');
 document.getElementById('h-dateprod').value = todayISO();
 
+let selectedOpNum = null;
+
 function buildGrid(){
   const groupe = Number(document.getElementById('h-groupe').value);
   const dateprod = document.getElementById('h-dateprod').value;
@@ -95,7 +96,7 @@ function buildGrid(){
   document.getElementById('grid-body').innerHTML = ops.length ? ops.map(o => {
     const prev = existing.find(e => normalizeOperatriceNum(e.num) === normalizeOperatriceNum(o.num)) || {};
     const safeNum = String(o.num).replace(/'/g, "\\'");
-    return `<tr data-num="${o.num}">
+    return `<tr data-num="${o.num}" onclick="selectRow('${safeNum}')" style="cursor: pointer;">
       <td>N° ${o.num} · ${o.nomPrenom || '—'}</td>
       <td><input type="time" class="in-e1" value="${prev.entree1||''}" onchange="recalcRow('${safeNum}')"></td>
       <td><input type="time" class="in-s1" value="${prev.sortie1||''}" onchange="recalcRow('${safeNum}')"></td>
@@ -104,9 +105,13 @@ function buildGrid(){
       <td><input type="time" class="in-e3" value="${prev.entree3||''}" onchange="recalcRow('${safeNum}')"></td>
       <td><input type="time" class="in-s3" value="${prev.sortie3||''}" onchange="recalcRow('${safeNum}')"></td>
       <td class="out-heures">${prev.heures ? fmt(prev.heures,2) : '—'}</td>
-      <td><button class="btn btn-save-one" onclick="saveOne('${safeNum}')" title="Enregistrer cette opératrice">💾 Enregistrer</button></td>
     </tr>`;
-  }).join('') : `<tr class="empty-row"><td colspan="9">Aucune opératrice dans ce groupe</td></tr>`;
+  }).join('') : `<tr class="empty-row"><td colspan="8">Aucune opératrice dans ce groupe</td></tr>`;
+  
+  selectedOpNum = null;
+  const btn = document.getElementById('btn-save-selected');
+  btn.disabled = true;
+  btn.textContent = '💾 Enregistrer';
   filterGrid();
   renderPointed();
 }
@@ -131,41 +136,21 @@ function filterGrid(){
   });
 }
 
-async function saveAll(){
-  const groupe = Number(document.getElementById('h-groupe').value);
-  const dateProduction = document.getElementById('h-dateprod').value;
-
-  const records = [];
-  document.querySelectorAll('#grid-body tr[data-num]').forEach(tr => {
-    const num = normalizeOperatriceNum(tr.dataset.num);
-    const op = DB.get('operatrice').find(o=>normalizeOperatriceNum(o.num)===num && o.groupe===groupe);
-    const entree1 = tr.querySelector('.in-e1').value, sortie1 = tr.querySelector('.in-s1').value;
-    const entree2 = tr.querySelector('.in-e2').value, sortie2 = tr.querySelector('.in-s2').value;
-    const entree3 = tr.querySelector('.in-e3').value, sortie3 = tr.querySelector('.in-s3').value;
-    let heures = 0;
-    [[entree1,sortie1],[entree2,sortie2],[entree3,sortie3]].forEach(([e,s]) => { if(e && s) heures += hoursBetween(e,s); });
-
-    const hasAnyTime = entree1 || sortie1 || entree2 || sortie2 || entree3 || sortie3;
-    if (hasAnyTime) {
-      records.push({
-        dateSaisie: todayISO(), dateProduction, groupe, num,
-        nomPrenom: op ? op.nomPrenom : '',
-        entree1, sortie1, entree2, sortie2, entree3, sortie3,
-        heures
-      });
-    }
-  });
-
-  try {
-    await DB.savePointage({ dateProduction, groupe, records });
-    toast('Badges enregistrés pour le groupe ' + groupe);
-    renderPointed();
-  } catch(e) {
-    toast('Erreur lors de l\'enregistrement');
-  }
+function selectRow(num) {
+  selectedOpNum = num;
+  document.querySelectorAll('#grid-body tr').forEach(tr => tr.classList.remove('selected-row'));
+  const tr = document.querySelector(`#grid-body tr[data-num="${num}"]`);
+  if (tr) tr.classList.add('selected-row');
+  
+  const btn = document.getElementById('btn-save-selected');
+  btn.disabled = false;
+  btn.textContent = `💾 Enregistrer (N° ${num})`;
 }
 
-async function saveOne(num) {
+async function saveSelected() {
+  if (!selectedOpNum) return;
+  const num = selectedOpNum;
+  
   const groupe = Number(document.getElementById('h-groupe').value);
   const dateProduction = document.getElementById('h-dateprod').value;
   const tr = document.querySelector(`#grid-body tr[data-num="${num}"]`);
@@ -190,8 +175,7 @@ async function saveOne(num) {
     entree1, sortie1, entree2, sortie2, entree3, sortie3, heures
   };
 
-  // Visual feedback: disable button while saving
-  const btn = tr.querySelector('.btn-save-one');
+  const btn = document.getElementById('btn-save-selected');
   const origText = btn.textContent;
   btn.disabled = true;
   btn.textContent = '⏳ ...';
