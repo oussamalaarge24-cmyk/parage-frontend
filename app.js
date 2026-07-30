@@ -243,13 +243,13 @@ function computeResultats(filterDateStart, filterGroupe, filterDateEnd = null) {
     if (data.fraisIndividuel > 0) {
       yieldVal = data.poidsFilet / data.fraisIndividuel;
     }
-    return { operatrice: data.operatrice, groupe: data.groupe,
+    return { operatrice: data.operatrice, num: data.num, groupe: data.groupe,
              poidsFilet: data.poidsFilet, nbrCaisse: data.nbrCaisse,
              heures: heuresOp, kph, yieldVal };
   });
 
   return {
-    rows, totalFilet, totalCuit, totalHeures, totalCaisses, totalFrais,
+    rows, totalFilet, totalCuit, totalHeures, totalCaisses, totalFrais, totalRecordsCuit: cuit.length,
     globalKph   : totalHeures ? (totalFilet / totalHeures)  : null,
     globalYield : totalFrais  ? (totalFilet / totalFrais)   : null
   };

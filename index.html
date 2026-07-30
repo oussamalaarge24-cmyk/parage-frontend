@@ -447,8 +447,8 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
       return;
     }
 
-    // Save session
-    sessionStorage.setItem('currentUser', JSON.stringify(data.user));
+    // Save session (include token so API calls can pass Authorization header)
+    sessionStorage.setItem('currentUser', JSON.stringify({ ...data.user, token: data.token }));
 
     // Redirect
     const redirects = {
