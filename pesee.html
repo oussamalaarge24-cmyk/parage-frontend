@@ -25,7 +25,7 @@
     <div class="grid-2">
       <div class="field">
         <label>Groupe</label>
-        <select id="p-groupe"><option value="1">Groupe 1</option><option value="2">Groupe 2</option></select>
+        <select id="p-groupe" onchange="markGroupManual()"><option value="1">Groupe 1</option><option value="2">Groupe 2</option></select>
       </div>
       <div class="field">
         <label>Opératrice (numéro de jeton)</label>
@@ -70,11 +70,17 @@ document.getElementById('ds-display').textContent = todayISO();
 document.getElementById('hr-display').textContent = nowHM();
 document.getElementById('dp-display').textContent = computeDateProduction();
 
+let isGroupManual = false;
 let resolvedOp = null;
+
+function markGroupManual() {
+  isGroupManual = true;
+}
+
 function syncGroupe(){
   const num = normalizeOperatriceNum(document.getElementById('p-numero').value);
   resolvedOp = DB.get('operatrice').find(o=>normalizeOperatriceNum(o.num)===num) || null;
-  if(resolvedOp) document.getElementById('p-groupe').value = resolvedOp.groupe;
+  if(resolvedOp && !isGroupManual) document.getElementById('p-groupe').value = resolvedOp.groupe;
 }
 
 function renderTicket(){
