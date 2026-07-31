@@ -25,6 +25,7 @@
     <div class="tab" data-tab="rendement">Rendement</div>
     <div class="tab" data-tab="certificats">Certificats</div>
     <div class="tab" data-tab="heures">Heures</div>
+    <div class="stat"><div class="label">Total des grilles </div><div class="value good" id="g-total-grilles">—</div></div>
   </div>
 
    <!-- ================= RENDEMENT ================= -->
@@ -106,7 +107,16 @@
       </div>
     </div>
   </div>
-  
+  <!-- ================= GRILLES ================= -->
+  <div class="tabpanel" id="panel-grilles">
+    <div class="card">
+      <h2><span class="n">·</span>Total des grilles 5 (Réception)</h2>
+      <p class="hint">Basé sur les enregistrements de poids cuit (increment +1 par enregistrement).</p>
+      <div class="stats">
+        <div class="stat"><div class="label">Total des grilles 5</div><div class="value good" id="g-total-grilles">—</div></div>
+      </div>
+    </div>
+  </div>
   
 </div>
 
@@ -283,6 +293,8 @@ document.getElementById('h-date').value = todayISO();
 window.DB_READY.then(() => {
   renderRendement(); renderCertificats(); renderHeuresTab();
 });
+
+
 </script>
 </body>
 </html>
