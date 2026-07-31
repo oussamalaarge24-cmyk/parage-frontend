@@ -190,7 +190,7 @@ async function saveCuit(){
 }
 function renderCuit(){
   const rows = DB.get('poidscuit').filter(r => r.dateProduction === computeDateProduction());
-  const lastRow = rows.length ? [rows[rows.length - 1]] : [];
+  const lastRows = rows.slice(-100).reverse();
   document.getElementById('cuit-table').innerHTML = lastRow.length ? lastRow.map(r => `
     <tr>
       <td data-label="Heure">${r.heure||'—'}</td>
