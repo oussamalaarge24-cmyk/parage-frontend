@@ -188,21 +188,29 @@ async function saveCuit(){
   toast('Poids cuit enregistré à ' + record.heure);
   renderCuit();
 }
-function renderCuit(){
-  const rows = DB.get('poidscuit').filter(r => r.dateProduction === computeDateProduction());
+function renderCuit() {
+  const rows = DB.get('poidscuit')
+    .filter(r => r.dateProduction === computeDateProduction());
+
   const lastRows = rows.slice(-100).reverse();
-  document.getElementById('cuit-table').innerHTML = lastRow.length ? lastRow.map(r => `
-    <tr>
-      <td data-label="Heure">${r.heure||'—'}</td>
-      <td data-label="Groupe">${r.groupe}</td>
-      <td data-label="Lot">${r.certificat}</td>
-      <td data-label="Chariot">#${r.numeroChariot}</td>
-      <td data-label="Poids grille">${fmt(r.poidsGrille)}</td>
-      <td><button class="btn btn-danger" data-del="poidscuit" data-id="${r.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">Suppr.</button></td>
-    </tr>`).join('')
+
+  document.getElementById('cuit-table').innerHTML = lastRows.length
+    ? lastRows.map(r => `
+      <tr>
+        <td data-label="Heure">${r.heure || '—'}</td>
+        <td data-label="Groupe">${r.groupe}</td>
+        <td data-label="Lot">${r.certificat}</td>
+        <td data-label="Chariot">#${r.numeroChariot}</td>
+        <td data-label="Poids grille">${fmt(r.poidsGrille)}</td>
+        <td>
+          <button class="btn btn-danger" data-del="poidscuit" data-id="${r.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">
+            Suppr.
+          </button>
+        </td>
+      </tr>
+    `).join('')
     : `<tr class="empty-row"><td colspan="6">Aucune saisie aujourd'hui</td></tr>`;
 }
-
 async function saveDechets(){
   const record = {
     dateProduction: computeDateProduction(),
