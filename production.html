@@ -39,7 +39,13 @@
       </div>
       <div class="grid-2">
         <div class="field"><label>Groupe</label><select id="o-groupe"><option value="1">Groupe 1</option><option value="2">Groupe 2</option></select></div>
-        <div class="field"><label>Services (séparés par virgule)</label><input type="text" id="o-services" placeholder="Parage, Conditionnement"></div>
+        <div class="field"><label>Service</label>
+          <select id="o-services">
+            <option value="Grattage">Grattage</option>
+            <option value="Service">Service</option>
+            <option value="Cuit">Cuit</option>
+          </select>
+        </div>
       </div>
       <div class="btn-row"><button class="btn btn-primary" onclick="addOp()">Ajouter</button></div>
     </div>
@@ -295,8 +301,12 @@ function renderOps(){
             </select>
           </div>
           <div class="field" style="margin:0">
-            <label>Services</label>
-            <input type="text" id="edit-services-${o.id}" value="${(o.services||'').replace(/"/g, '&quot;')}" placeholder="Parage, Conditionnement" class="edit-input" onclick="event.stopPropagation();">
+            <label>Service</label>
+            <select id="edit-services-${o.id}" class="edit-input" onclick="event.stopPropagation();">
+              <option value="Grattage" ${o.services==='Grattage'?'selected':''}>Grattage</option>
+              <option value="Service" ${o.services==='Service'?'selected':''}>Service</option>
+              <option value="Cuit" ${o.services==='Cuit'?'selected':''}>Cuit</option>
+            </select>
           </div>
         </div>
         <div class="btn-row" style="margin:0;gap:8px;">
@@ -520,11 +530,11 @@ function renderPertes(){
   document.getElementById('pe-eau-pct').textContent = p.pctPerteEau!==null ? fmt(p.pctPerteEau,1) + ' %' : '—';
 }
 
-document.getElementById('r-date').value = todayISO();
-document.getElementById('c-date').value = todayISO();
-document.getElementById('mf-date').value = todayISO();
-document.getElementById('pe-date').value = todayISO();
-document.getElementById('h-date').value = todayISO();
+document.getElementById('r-date').value = computeDateProduction();
+document.getElementById('c-date').value = computeDateProduction();
+document.getElementById('mf-date').value = computeDateProduction();
+document.getElementById('pe-date').value = computeDateProduction();
+document.getElementById('h-date').value = computeDateProduction();
 
 /* ---------- heures ---------- */
 function renderHeuresTab() {

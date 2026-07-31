@@ -50,6 +50,7 @@
             <th colspan="2">Cycle 2</th>
             <th colspan="2">Cycle 3</th>
             <th rowspan="2">Heures</th>
+            <th rowspan="2">Action</th>
           </tr>
           <tr>
             <th>Entrée</th><th>Sortie</th>
@@ -105,8 +106,11 @@ function buildGrid(){
       <td><input type="time" class="in-e3" value="${prev.entree3||''}" onchange="recalcRow('${safeNum}')"></td>
       <td><input type="time" class="in-s3" value="${prev.sortie3||''}" onchange="recalcRow('${safeNum}')"></td>
       <td class="out-heures">${prev.heures ? fmt(prev.heures,2) : '—'}</td>
+      <td>
+        <button class="btn btn-primary" onclick="saveRow(event, '${safeNum}')" style="padding:6px 10px;min-height:32px;font-size:12.5px;">💾 Enreg.</button>
+      </td>
     </tr>`;
-  }).join('') : `<tr class="empty-row"><td colspan="8">Aucune opératrice dans ce groupe</td></tr>`;
+  }).join('') : `<tr class="empty-row"><td colspan="9">Aucune opératrice dans ce groupe</td></tr>`;
   
   selectedOpNum = null;
   const btn = document.getElementById('btn-save-selected');
@@ -147,7 +151,19 @@ function selectRow(num) {
   btn.textContent = `💾 Enregistrer (N° ${num})`;
 }
 
-async function saveSelected() {
+async function saveRow(e, num) {
+  if (e) e.stopPropagation();
+  selectRow(num);
+  const rowBtn = e ? e.target : null;
+  const origRowText = rowBtn ? rowBtn.textContent : '';
+  if (rowBtn) {
+    rowBtn.disabled = true;
+    rowBtn.textContent = '⏳ ...';
+  }
+  await saveSelected(rowBtn, origRowText);
+}
+
+async function saveSelected(rowBtn = null, origRowText = '') {
   if (!selectedOpNum) return;
   const num = selectedOpNum;
   
@@ -184,12 +200,20 @@ async function saveSelected() {
     await DB.saveOnePointage(dateProduction, groupe, record);
     btn.textContent = '✅ OK';
     btn.style.background = 'var(--success, #22c55e)';
-    setTimeout(() => { btn.textContent = origText; btn.style.background = ''; btn.disabled = false; }, 1500);
+    if(rowBtn) {
+      rowBtn.textContent = '✅ OK';
+      rowBtn.style.background = 'var(--success, #22c55e)';
+    }
+    setTimeout(() => { 
+      btn.textContent = origText; btn.style.background = ''; btn.disabled = false; 
+      if(rowBtn) { rowBtn.textContent = origRowText; rowBtn.style.background = ''; rowBtn.disabled = false; }
+    }, 1500);
     toast(`N° ${num} — ${op ? op.nomPrenom : ''} enregistré(e)`);
     renderPointed();
   } catch(e) {
     btn.textContent = origText;
     btn.disabled = false;
+    if(rowBtn) { rowBtn.textContent = origRowText; rowBtn.disabled = false; }
     toast('Erreur lors de l\'enregistrement de N° ' + num);
   }
 }
