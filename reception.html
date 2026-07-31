@@ -183,8 +183,8 @@ async function saveCuit(){
     poidsGrille: Number(document.getElementById('cuit-poids').value)||0
   };
   const row = await DB.add('poidscuit', record);
-  ['cuit-chariot','cuit-poids'].forEach(id => document.getElementById(id).value='');
-  document.getElementById('cuit-chariot').focus();
+  document.getElementById('cuit-poids').value = '';
+  document.getElementById('cuit-poids').focus();
   toast('Poids cuit enregistré à ' + record.heure);
   renderCuit();
 }
