@@ -22,7 +22,7 @@
 
   <div class="tabs">
     
-    <div class="tab" data-tab="rendement">Rendement</div>
+    <div class="tab active" data-tab="rendement">Rendement</div>
     <div class="tab" data-tab="certificats">Certificats</div>
     <div class="tab" data-tab="heures">Heures</div>
     <div class="tab" data-tab="grilles">Grilles </div>
@@ -30,7 +30,7 @@
   </div>-->
 
    <!-- ================= RENDEMENT ================= -->
-   <div class="tabpanel" id="panel-rendement">
+   <div class="tabpanel active" id="panel-rendement">
     <div class="card">
       <h2><span class="n">01</span>Filtres</h2>
       <div class="grid-3">
@@ -111,10 +111,10 @@
   <!-- ================= GRILLES ================= -->
   <div class="tabpanel" id="panel-grilles">
     <div class="card">
-      <h2><span class="n">·</span>Total des grilles 5 (Réception)</h2>
+      <h2><span class="n">·</span>Total des grilles (Réception)</h2>
       <p class="hint">Basé sur les enregistrements de poids cuit (increment +1 par enregistrement).</p>
       <div class="stats">
-        <div class="stat"><div class="label">Total des grilles 5</div><div class="value good" id="g-total-grilles">—</div></div>
+        <div class="stat"><div class="label">Total des grilles </div><div class="value good" id="g-total-grilles">—</div></div>
       </div>
     </div>
   </div>
@@ -152,7 +152,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   document.querySelectorAll('.tabpanel').forEach(x=>x.classList.remove('active'));
   t.classList.add('active');
   document.getElementById('panel-' + t.dataset.tab).classList.add('active');
-  const map = { rendement:renderRendement, certificats:renderCertificats, frais:renderFrais, pertes:renderPertes, ops:renderOps, heures:renderHeuresTab };
+  const map = { rendement:renderRendement, certificats:renderCertificats, heures:renderHeuresTab, grilles:renderRendement };
   if(map[t.dataset.tab]) map[t.dataset.tab]();
 }));
 /* ---------- rendement ---------- */
@@ -170,6 +170,10 @@ function renderRendement(){
     document.getElementById('r-yield').textContent = (r.globalYield * 100).toFixed(1) + ' %';
   } else {
     document.getElementById('r-yield').textContent = '—';
+  }
+
+  if (document.getElementById('g-total-grilles')) {
+    document.getElementById('g-total-grilles').textContent = r.totalRecordsCuit;
   }
 
   document.getElementById('rendement-table').innerHTML = r.rows.length ? r.rows.map(row => {
@@ -286,14 +290,22 @@ window.__renderers.heures = renderHeuresTab;
 window.__renderers.certificats = renderCertificats;
 window.__renderers.rendement = renderRendement;
 window.__renderers.pertes = renderPertes;
-document.getElementById('r-date-start').value = todayISO();
-document.getElementById('r-date-end').value = todayISO();
-document.getElementById('c-date').value = todayISO();
-document.getElementById('h-date').value = todayISO();
+document.getElementById('r-date-start').value = computeDateProduction();
+document.getElementById('r-date-end').value = computeDateProduction();
+document.getElementById('c-date').value = computeDateProduction();
+document.getElementById('h-date').value = computeDateProduction();
 
 window.DB_READY.then(() => {
   renderRendement(); renderCertificats(); renderHeuresTab();
 });
+
+// Auto-actualisation toutes les 5 secondes
+setInterval(async () => {
+  await DB.init(true);
+  if (typeof renderRendement === 'function') renderRendement();
+  if (typeof renderCertificats === 'function') renderCertificats();
+  if (typeof renderHeuresTab === 'function') renderHeuresTab();
+}, 5000);
 
 
 </script>
