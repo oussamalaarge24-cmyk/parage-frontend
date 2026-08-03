@@ -103,7 +103,7 @@
       <p class="hint">Poids = somme du poids cuit (poids grille) enregistré pour ce certificat.</p>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Certificat</th><th>Espèce</th><th>Taille</th><th>Poids cuit (kg)</th></tr></thead>
+          <thead><tr><th>Certificat</th><th>Espèce</th><th>Taille</th><th>Poids cuit (kg)</th><th>Poids filet (kg)</th></tr></thead>
 
           <tbody id="certificats-table"></tbody>
         </table>
@@ -445,6 +445,11 @@ function renderCertificats(){
   const date   = document.getElementById('c-date').value;
   const groupe = document.getElementById('c-groupe').value;
 
+  // ===== Production (Poids filet) =====
+  const productions = DB.get('production').filter(p =>
+    (!date || p.dateProduction === date) &&
+    (!groupe || String(p.groupe) === String(groupe))
+  );
   // Aggregate poidscuit by certificat (from stored certificat field, or via lot join)
   const cuitRows = DB.get('poidscuit').filter(c =>
     (!date   || c.dateProduction === date) &&
@@ -452,6 +457,37 @@ function renderCertificats(){
   );
 
   const byCert = {};
+
+  // -------- FILET --------
+  productions.forEach(p => {
+
+    let cert = '';
+    let espece = '—';
+    let taille = '—';
+
+    const lot = DB.get('lot').find(l => l.id == p.idLot);
+
+    if (lot) {
+      cert = lot.certificat;
+      espece = lot.espece;
+      taille = lot.taille;
+    }
+
+    const key = cert + "|" + espece;
+
+    if (!byCert[key]) {
+      byCert[key] = {
+        certificat: cert,
+        espece,
+        taille,
+        filet: 0,
+        cuit: 0
+      };
+    }
+
+    byCert[key].filet += Number(p.poidsFilet) || 0;
+  });
+
   cuitRows.forEach(c => {
     // Prefer explicit certificat stored on poidscuit; fall back to looking up lot
     let certKey  = c.certificat || null;
@@ -481,7 +517,7 @@ function renderCertificats(){
       ? 'Aucune pesée enregistrée (onglet Pesée)'
       : 'Aucune donnée pour ce filtre — essayez sans date ou sans groupe';
     document.getElementById('certificats-table').innerHTML =
-      `<tr class="empty-row"><td colspan="4">${msg}</td></tr>`;
+      `<tr class="empty-row"><td colspan="5">${msg}</td></tr>`;
     return;
   }
 
@@ -491,8 +527,17 @@ function renderCertificats(){
       <td data-label="Espèce">${r.espece}</td>
       <td data-label="Taille">${r.taille}</td>
       <td data-label="Poids cuit"><strong>${fmt(r.poids)} kg</strong></td>
+      <td><strong>${fmt(r.filet)} kg</strong></td>
     </tr>`
-  ).join('');
+  ).join('') +
+
+  `
+  <tr style="font-weight:bold;background:#eef6ff;">
+      <td colspan="3">TOTAL</td>
+      <td>${fmt(totalFilet)} kg</td>
+      <td>${fmt(totalCuit)} kg</td>
+  </tr>
+  `;;
 }
 
 /* ---------- moyen frais (saisie manuelle) ---------- */
