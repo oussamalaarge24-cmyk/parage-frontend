@@ -20,7 +20,7 @@
 
   <div class="card">
     <h2><span class="n">01</span>Nouvelle production</h2>
-    <p class="hint">Date de saisie : <strong id="ds-display"></strong> · Heure : <strong id="hr-display"></strong> · Date de production (auto) : <strong id="dp-display"></strong></p>
+    <p class="hint" style="font-size: 1.1em;">Date de saisie : <strong id="ds-display"></strong> · Heure : <strong id="hr-display"></strong> · Date de production : <strong id="dp-display"></strong> · <span style="display:inline-block; margin-left: 10px; padding: 4px 8px; background: #eef2f2; border-radius: 4px; border: 1px solid #dde8e8;">Total Caisses : <strong id="caisses-display" style="font-weight:900; font-size:1.3em; color:#0e7490;">0</strong></span></p>
 
     <div class="grid-2">
       <div class="field">
@@ -41,7 +41,7 @@
 
     <div class="field" style="margin-top:14px">
       <label>Poids filet (kg)</label>
-      <input type="number" step="0.01" id="p-poids" placeholder="6.32">
+      <input type="number" step="0.01" id="p-poids" placeholder="6.32" max="17">
     </div>
 
     <div class="btn-row">
@@ -79,7 +79,15 @@ function markGroupManual() {
 
 function syncGroupe(){
   const num = normalizeOperatriceNum(document.getElementById('p-numero').value);
-  resolvedOp = DB.get('operatrice').find(o=>normalizeOperatriceNum(o.num)===num) || null;
+  const currentGroup = document.getElementById('p-groupe').value;
+  
+  let op = DB.get('operatrice').find(o => normalizeOperatriceNum(o.num) === num && String(o.groupe) === String(currentGroup));
+  
+  if (!op && !isGroupManual) {
+      op = DB.get('operatrice').find(o => normalizeOperatriceNum(o.num) === num);
+  }
+  
+  resolvedOp = op || null;
   if(resolvedOp && !isGroupManual) document.getElementById('p-groupe').value = resolvedOp.groupe;
 }
 
@@ -95,10 +103,12 @@ async function saveProduction(){
   const idLot = Number(document.getElementById('p-lot').value);
   const num = normalizeOperatriceNum(document.getElementById('p-numero').value);
   const poidsFilet = Number(document.getElementById('p-poids').value)||0;
-  const op = DB.get('operatrice').find(o=>normalizeOperatriceNum(o.num)===num) || null;
+  const currentGroup = document.getElementById('p-groupe').value;
+  const op = DB.get('operatrice').find(o => normalizeOperatriceNum(o.num) === num && String(o.groupe) === String(currentGroup)) || null;
   if(!num){ toast('Indiquez le numéro de jeton'); return; }
-  if(!op){ toast('Numéro de jeton inconnu'); return; }
+  if(!op){ toast('Numéro de jeton inconnu pour ce groupe'); return; }
   if(!poidsFilet){ toast('Indiquez le poids filet'); return; }
+  if(poidsFilet > 17){ toast('Le poids ne peut pas dépasser 17 kg'); return; }
 
   const record = {
     dateSaisie: todayISO(),
@@ -118,6 +128,13 @@ async function saveProduction(){
 }
 
 function renderProd(){
+  const todayProd = computeDateProduction();
+  const prods = DB.get('production').filter(p => p.dateProduction === todayProd);
+  let totalCaisses = 0;
+  prods.forEach(p => { totalCaisses += Number(p.nombreCaisse) || 0; });
+  const cd = document.getElementById('caisses-display');
+  if(cd) cd.textContent = totalCaisses;
+
   const last = DB.last('production');
   const tbody = document.getElementById('prod-table');
   if(!last){

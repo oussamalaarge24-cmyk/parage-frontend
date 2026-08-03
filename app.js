@@ -101,7 +101,7 @@ function nowHM() {
 
 function computeDateProduction() {
   const now = new Date();
-  if (now.getHours() < 7) now.setDate(now.getDate() - 1);
+  if (now.getHours() < 6) now.setDate(now.getDate() - 1);
   return now.toISOString().slice(0, 10);
 }
 
