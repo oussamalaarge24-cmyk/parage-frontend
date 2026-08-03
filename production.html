@@ -542,8 +542,8 @@ function renderCertificats(){
         <td><span class="ticket">${r.certificat}</span></td>
         <td>${r.espece}</td>
         <td>${r.taille}</td>
-        <td><strong>${fmt(r.filet)} kg</strong></td>
         <td><strong>${fmt(r.cuit)} kg</strong></td>
+        <td><strong>${fmt(r.filet)} kg</strong></td>
       </tr>
       `;
     }).join("") +
@@ -551,8 +551,8 @@ function renderCertificats(){
     `
     <tr style="font-weight:bold;background:#eef6ff;">
         <td colspan="3">TOTAL</td>
-        <td>${fmt(totalFilet)} kg</td>
         <td>${fmt(totalCuit)} kg</td>
+        <td>${fmt(totalFilet)} kg</td>
     </tr>
     `;
 }
