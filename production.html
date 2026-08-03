@@ -177,7 +177,7 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Opératrice</th><th>Numéro</th><th>Groupe</th><th>Services</th><th>Heures</th></tr></thead>
+          <thead><tr><th>Opératrice</th><th>Numéro</th><th>Groupe</th><th>Services</th><th>Cycles</th><th>Heures</th></tr></thead>
           <tbody id="heures-table"></tbody>
         </table>
       </div>
@@ -600,6 +600,15 @@ document.getElementById('pe-date').value = computeDateProduction();
 document.getElementById('h-date').value = computeDateProduction();
 
 /* ---------- heures ---------- */
+function countCycles(h) {
+  let cycles = 0;
+
+  if (h.entree1 && h.sortie1) cycles++;
+  if (h.entree2 && h.sortie2) cycles++;
+  if (h.entree3 && h.sortie3) cycles++;
+
+  return cycles;
+}
 function renderHeuresTab() {
   const date = document.getElementById('h-date').value;
   const groupe = document.getElementById('h-groupe').value;
@@ -621,6 +630,7 @@ function renderHeuresTab() {
       num: h.num,
       groupe: h.groupe,
       services: op ? op.services : '—',
+      cycles: countCycles(h),
       heures: h.heures
     });
   });
@@ -633,9 +643,10 @@ function renderHeuresTab() {
       <td data-label="Numéro">${r.num}</td>
       <td data-label="Groupe">${r.groupe}</td>
       <td data-label="Services">${r.services||'—'}</td>
+      <td data-label="Cycles"><strong>${r.cycles}</strong></td>
       <td data-label="Heures"><strong>${fmt(r.heures,2)} h</strong></td>
     </tr>`;
-  }).join('') : '<tr class="empty-row"><td colspan="5">Aucune donnée pour ce filtre</td></tr>';
+  }).join('') : '<tr class="empty-row"><td colspan="6">Aucune donnée pour ce filtre</td></tr>';
   
   document.getElementById('h-total-heures').textContent = data.length ? fmt(totalH, 2) : '—';
 }
