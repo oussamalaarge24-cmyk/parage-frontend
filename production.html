@@ -611,6 +611,10 @@ function countCycles(h) {
 
   return cycles;
 } */
+
+function cycleLabel(e, s) {
+  return (e || s) ? `${e || '—'} → ${s || '—'}` : '—';
+}
 function renderHeuresTab() {
   const date = document.getElementById('h-date').value;
   const groupe = document.getElementById('h-groupe').value;
