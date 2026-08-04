@@ -152,13 +152,13 @@ function renderProd(){
 
   tbody.innerHTML = '';
 
-if (!last10.length) {
-  tbody.innerHTML = `
-    <tr class="empty-row">
-      <td colspan="6">Aucune production saisie aujourd'hui</td>
-    </tr>`;
-  return;
-}
+//if (!last10.length) {
+ // tbody.innerHTML = `
+  //  <tr class="empty-row">
+   //   <td colspan="6">Aucune production saisie aujourd'hui</td>
+ //   </tr>`;
+ // return;
+//}
 
 last10.forEach(last => {
   const lot = DB.get('lot').find(l => l.id === last.idLot);
