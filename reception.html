@@ -192,7 +192,9 @@ function renderCuit() {
   const rows = DB.get('poidscuit')
     .filter(r => r.dateProduction === computeDateProduction());
 
-  const lastRows = rows.slice(-100).reverse();
+  const lastRows = [...rows]
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 100);
 
   document.getElementById('cuit-table').innerHTML = lastRows.length
     ? lastRows.map(r => `
