@@ -138,7 +138,7 @@ function renderProd(){
   //const last = DB.last('production');
   //const last = DB.get('production')
   //.sort((a, b) => b.id - a.id)[0];
-  const last10 = [...DB.get('production')]
+  const last10 = [...prods]
   .sort((a, b) => b.id - a.id)
   .slice(0, 10);
   const tbody = document.getElementById('prod-table');
