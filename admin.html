@@ -757,9 +757,10 @@ async function saveOpEdit(id) {
 
 /* ---------- rendement ---------- */
 function renderRendement(){
-  const date   = document.getElementById('r-date').value;
+  const dateStart = document.getElementById('r-date-start').value;
+  const dateEnd   = document.getElementById('r-date-end').value;
   const groupe = document.getElementById('r-groupe').value;
-  const r = computeResultats(date, groupe);
+  const r = computeResultats(dateStart, dateEnd, groupe);
 
   document.getElementById('r-filet').textContent   = fmt(r.totalFilet) + ' kg';
   document.getElementById('r-kph').textContent     = r.globalKph   !== null ? fmt(r.globalKph,2)   + ' kg/h' : '—';
@@ -796,9 +797,10 @@ function renderCertificats(){
 
   // ===== Production (Poids filet) =====
   const productions = DB.get('production').filter(p =>
-    (!date || p.dateProduction === date) &&
-    (!groupe || String(p.groupe) === String(groupe))
-  );
+  (!dateStart || p.dateProduction >= dateStart) &&
+  (!dateEnd   || p.dateProduction <= dateEnd) &&
+  (!groupe || String(p.groupe) === String(groupe))
+);
 
   // ===== Poids cuit =====
   const cuitRows = DB.get('poidscuit').filter(c =>
