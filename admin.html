@@ -760,7 +760,7 @@ function renderRendement(){
   const dateStart = document.getElementById('r-date-start').value;
   const dateEnd   = document.getElementById('r-date-end').value;
   const groupe = document.getElementById('r-groupe').value;
-  const r = computeResultats(dateStart, dateEnd, groupe);
+  const r = computeResultats(dateStart, groupe, dateEnd);
 
   document.getElementById('r-filet').textContent   = fmt(r.totalFilet) + ' kg';
   document.getElementById('r-kph').textContent     = r.globalKph   !== null ? fmt(r.globalKph,2)   + ' kg/h' : '—';
