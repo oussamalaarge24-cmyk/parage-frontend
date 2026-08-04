@@ -797,8 +797,7 @@ function renderCertificats(){
 
   // ===== Production (Poids filet) =====
   const productions = DB.get('production').filter(p =>
-  (!dateStart || p.dateProduction >= dateStart) &&
-  (!dateEnd   || p.dateProduction <= dateEnd) &&
+  (!date || p.dateProduction === date) &&
   (!groupe || String(p.groupe) === String(groupe))
 );
 
