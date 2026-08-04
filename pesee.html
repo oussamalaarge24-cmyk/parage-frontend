@@ -136,8 +136,11 @@ function renderProd(){
   if(cd) cd.textContent = totalCaisses;
 
   //const last = DB.last('production');
-  const last = DB.get('production')
-  .sort((a, b) => b.id - a.id)[0];
+  //const last = DB.get('production')
+  //.sort((a, b) => b.id - a.id)[0];
+  const last10 = [...DB.get('production')]
+  .sort((a, b) => b.id - a.id)
+  .slice(0, 10);
   const tbody = document.getElementById('prod-table');
   if(!last){
     tbody.innerHTML = `<tr class="empty-row"><td colspan="7">Aucune production saisie aujourd'hui</td></tr>`;
@@ -148,29 +151,48 @@ function renderProd(){
   const nom = op ? ('N° ' + op.num + ' — ' + op.nomPrenom) : '—';
 
   tbody.innerHTML = '';
+
+if (!last10.length) {
+  tbody.innerHTML = `
+    <tr class="empty-row">
+      <td colspan="6">Aucune production saisie aujourd'hui</td>
+    </tr>`;
+  return;
+}
+
+last10.forEach(last => {
+  const lot = DB.get('lot').find(l => l.id === last.idLot);
+  const op = DB.get('operatrice').find(o => o.id === last.idOperatrice);
+  const nom = op ? `N° ${op.num} — ${op.nomPrenom}` : '—';
+
   const tr = document.createElement('tr');
+
   tr.innerHTML = `
-    <td data-label="Heure">${last.heure||'—'}</td>
+    <td data-label="Heure">${last.heure || '—'}</td>
     <td data-label="Opératrice">${nom}</td>
     <td data-label="Groupe">${last.groupe}</td>
-    <td data-label="Lot">${lot?lot.certificat:'—'}</td>
+    <td data-label="Lot">${lot ? lot.certificat : '—'}</td>
     <td data-label="Poids filet">${fmt(last.poidsFilet)}</td>
-    <td></td>`;
-  const delTd = tr.lastElementChild;
+    <td></td>
+  `;
+
   const delBtn = document.createElement('button');
   delBtn.className = 'btn btn-danger';
   delBtn.style.cssText = 'padding:6px 10px;min-height:32px;font-size:12.5px';
   delBtn.textContent = '🗑';
   delBtn.type = 'button';
+
   delBtn.addEventListener('click', async () => {
-    if(confirm('Supprimer cette dernière production ?')){
+    if (confirm('Supprimer cette production ?')) {
       await DB.remove('production', last.id);
       toast('Production supprimée');
       renderProd();
     }
   });
-  delTd.appendChild(delBtn);
+
+  tr.lastElementChild.appendChild(delBtn);
   tbody.appendChild(tr);
+});
 }
 
 window.DB_READY.then(() => {
