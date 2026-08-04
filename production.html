@@ -630,11 +630,9 @@ function renderHeuresTab() {
       num: h.num,
       groupe: h.groupe,
       services: op ? op.services : '—',
-      cycles: [
-  h.entree1 && h.sortie1 ? `${h.entree1} → ${h.sortie1}` : null,
-  h.entree2 && h.sortie2 ? `${h.entree2} → ${h.sortie2}` : null,
-  h.entree3 && h.sortie3 ? `${h.entree3} → ${h.sortie3}` : null
-].filter(Boolean).join('<br>'),
+      cycle1: cycleLabel(h.entree1, h.sortie1),
+      cycle2: cycleLabel(h.entree2, h.sortie2),
+      cycle3: cycleLabel(h.entree3, h.sortie3),
       heures: h.heures
     });
   });
@@ -647,10 +645,12 @@ function renderHeuresTab() {
       <td data-label="Numéro">${r.num}</td>
       <td data-label="Groupe">${r.groupe}</td>
       <td data-label="Services">${r.services||'—'}</td>
-      <td data-label="Cycles">${r.cycles || '—'}</td>
+      td data-label="Cycle 1">${r.cycle1}</td>
+        <td data-label="Cycle 2">${r.cycle2}</td>
+        <td data-label="Cycle 3">${r.cycle3}</td>
       <td data-label="Heures"><strong>${fmt(r.heures,2)} h</strong></td>
     </tr>`;
-  }).join('') : '<tr class="empty-row"><td colspan="6">Aucune donnée pour ce filtre</td></tr>';
+  }).join('') : '<tr class="empty-row"><td colspan="8">Aucune donnée pour ce filtre</td></tr>';
   
   document.getElementById('h-total-heures').textContent = data.length ? fmt(totalH, 2) : '—';
 }
