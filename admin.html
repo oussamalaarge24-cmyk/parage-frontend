@@ -114,6 +114,7 @@ tableaux de bord (rendement, certificats, moyen frais, pertes).</p>
       <div class="stat"><div class="label">Yield global (filet / frais)</div><div class="value good" id="r-yield">—</div></div>
       <div class="stat"><div class="label">KPH global</div><div class="value" id="r-kph">—</div></div>
       <div class="stat"><div class="label">Total caisses</div><div class="value warn" id="r-caisses">—</div></div>
+      <div class="stat"><div class="label">Total des grilles </div><div class="value good" id="g-total-grilles">—</div></div>
     </div>
     <div class="card">
       <div class="card-header-with-export">
@@ -157,7 +158,7 @@ tableaux de bord (rendement, certificats, moyen frais, pertes).</p>
       <p class="hint">Poids = somme du poids cuit (poids grille) enregistré pour ce certificat.</p>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Certificat</th><th>Espèce</th><th>Taille</th><th>Poids cuit (kg)</th></tr></thead>
+          <thead><tr><th>Certificat</th><th>Espèce</th><th>Taille</th><th>Poids cuit (kg)</th><th>Poids filet (kg)</th></tr></thead>
           <tbody id="certificats-table"></tbody>
         </table>
       </div>
@@ -260,7 +261,8 @@ tableaux de bord (rendement, certificats, moyen frais, pertes).</p>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Opératrice</th><th>Numéro</th><th>Groupe</th><th>Services</th><th>Heures</th></tr></thead>
+          <thead><tr><th>Opératrice</th><th>Numéro</th><th>Groupe</th><th>Services</th><th>Cycle 1</th>
+            <th>Cycle 2</th><th>Cycle 3</th><th>Heures</th></tr></thead>
           <tbody id="heures-table"></tbody>
         </table>
       </div>
@@ -755,10 +757,9 @@ async function saveOpEdit(id) {
 
 /* ---------- rendement ---------- */
 function renderRendement(){
-  const dateStart = document.getElementById('r-date-start').value;
-  const dateEnd   = document.getElementById('r-date-end').value;
+  const date   = document.getElementById('r-date').value;
   const groupe = document.getElementById('r-groupe').value;
-  const r = computeResultats(dateStart, groupe, dateEnd);
+  const r = computeResultats(date, groupe);
 
   document.getElementById('r-filet').textContent   = fmt(r.totalFilet) + ' kg';
   document.getElementById('r-kph').textContent     = r.globalKph   !== null ? fmt(r.globalKph,2)   + ' kg/h' : '—';
@@ -770,11 +771,15 @@ function renderRendement(){
   } else {
     document.getElementById('r-yield').textContent = '—';
   }
+  
+  if (document.getElementById('g-total-grilles')) {
+    document.getElementById('g-total-grilles').textContent = r.totalRecordsCuit;
+  }
 
   document.getElementById('rendement-table').innerHTML = r.rows.length ? r.rows.map(row => {
     let rowYield = row.yieldVal !== null ? (row.yieldVal * 100).toFixed(1) + ' %' : '—';
     return `<tr>
-      <td data-label="Opératrice">${row.operatrice}</td><td data-label="Groupe">Grp ${row.groupe}</td>
+      <td data-label="Opératrice">${row.operatrice}</td><td data-label="Numéro">${row.num || '—'}</td><td data-label="Groupe">Grp ${row.groupe}</td>
       <td data-label="Poids filet">${fmt(row.poidsFilet)} kg</td><td data-label="Caisses">${row.nbrCaisse}</td>
       <td data-label="Heures">${row.heures > 0 ? fmt(row.heures,1) + ' h' : '—'}</td>
       <td data-label="KPH">${row.kph !== null ? fmt(row.kph,2) : '—'}</td>
@@ -783,59 +788,122 @@ function renderRendement(){
   }).join('') : `<tr class="empty-row"><td colspan="7">Aucune donnée pour ce filtre</td></tr>`;
 }
 
+
 /* ---------- certificats ---------- */
 function renderCertificats(){
   const date   = document.getElementById('c-date').value;
   const groupe = document.getElementById('c-groupe').value;
 
-  // Aggregate poidscuit by certificat (from stored certificat field, or via lot join)
+  // ===== Production (Poids filet) =====
+  const productions = DB.get('production').filter(p =>
+    (!date || p.dateProduction === date) &&
+    (!groupe || String(p.groupe) === String(groupe))
+  );
+
+  // ===== Poids cuit =====
   const cuitRows = DB.get('poidscuit').filter(c =>
-    (!date   || c.dateProduction === date) &&
+    (!date || c.dateProduction === date) &&
     (!groupe || String(c.groupe) === String(groupe))
   );
 
   const byCert = {};
-  cuitRows.forEach(c => {
-    // Prefer explicit certificat stored on poidscuit; fall back to looking up lot
-    let certKey  = c.certificat || null;
-    let espece   = c.espece     || null;
-    let taille   = c.taille     || null;
 
-    if (!certKey && c.idLot) {
-      const lot = DB.get('lot').find(l => l.id === c.idLot);
-      if (lot) { certKey = lot.certificat; espece = lot.espece; taille = lot.taille; }
+  // -------- FILET --------
+  productions.forEach(p => {
+
+    let cert = '';
+    let espece = '—';
+    let taille = '—';
+
+    const lot = DB.get('lot').find(l => l.id == p.idLot);
+
+    if (lot) {
+      cert = lot.certificat;
+      espece = lot.espece;
+      taille = lot.taille;
     }
-    if (!certKey) certKey = '(sans certificat)';
 
-    const key = certKey + '|' + (espece || '');
+    const key = cert + "|" + espece;
+
     if (!byCert[key]) {
-      byCert[key] = { certificat: certKey, espece: espece || '—', taille: taille || '—', poids: 0, nb: 0 };
+      byCert[key] = {
+        certificat: cert,
+        espece,
+        taille,
+        filet: 0,
+        cuit: 0
+      };
     }
-    byCert[key].poids += Number(c.poidsGrille) || 0;
-    byCert[key].nb++;
+
+    byCert[key].filet += Number(p.poidsFilet) || 0;
   });
 
-  const rows = Object.values(byCert).sort((a,b) => b.poids - a.poids);
+  // -------- CUIT --------
+  cuitRows.forEach(c => {
+
+    let cert = c.certificat;
+    let espece = c.espece;
+    let taille = c.taille;
+
+    if ((!cert || !espece) && c.idLot) {
+      const lot = DB.get('lot').find(l => l.id == c.idLot);
+      if (lot) {
+        cert = lot.certificat;
+        espece = lot.espece;
+        taille = lot.taille;
+      }
+    }
+
+    const key = cert + "|" + espece;
+
+    if (!byCert[key]) {
+      byCert[key] = {
+        certificat: cert,
+        espece,
+        taille,
+        filet: 0,
+        cuit: 0
+      };
+    }
+
+    byCert[key].cuit += Number(c.poidsGrille) || 0;
+  });
+
+  const rows = Object.values(byCert);
 
   if (!rows.length) {
-    // Also check if we have any poidscuit at all (to distinguish no data vs wrong filter)
-    const total = DB.get('poidscuit').length;
-    const msg = total === 0
-      ? 'Aucune pesée enregistrée (onglet Pesée)'
-      : 'Aucune donnée pour ce filtre — essayez sans date ou sans groupe';
-    document.getElementById('certificats-table').innerHTML =
-      `<tr class="empty-row"><td colspan="4">${msg}</td></tr>`;
+    document.getElementById("certificats-table").innerHTML =
+      `<tr><td colspan="5">Aucune donnée</td></tr>`;
     return;
   }
 
-  document.getElementById('certificats-table').innerHTML = rows.map(r => `
-    <tr>
-      <td data-label="Certificat"><span class="ticket">${r.certificat}</span></td>
-      <td data-label="Espèce">${r.espece}</td>
-      <td data-label="Taille">${r.taille}</td>
-      <td data-label="Poids cuit"><strong>${fmt(r.poids)} kg</strong></td>
-    </tr>`
-  ).join('');
+  let totalFilet = 0;
+  let totalCuit = 0;
+
+  document.getElementById("certificats-table").innerHTML =
+    rows.map(r => {
+
+      totalFilet += r.filet;
+      totalCuit += r.cuit;
+
+      return `
+      <tr>
+        <td><span class="ticket">${r.certificat}</span></td>
+        <td>${r.espece}</td>
+        <td>${r.taille}</td>
+        <td><strong>${fmt(r.cuit)} kg</strong></td>
+        <td><strong>${fmt(r.filet)} kg</strong></td>
+      </tr>
+      `;
+    }).join("") +
+
+    `
+    <tr style="font-weight:bold;background:#eef6ff;">
+        <td colspan="3">TOTAL</td>
+        <td>${fmt(totalCuit)} kg</td>
+        <td>${fmt(totalFilet)} kg</td>
+    </tr>
+    `;
 }
 
 /* ---------- moyen frais (saisie manuelle) ---------- */
@@ -910,6 +978,10 @@ document.getElementById('pe-date').value = todayISO();
 document.getElementById('h-date').value = todayISO();
 
 /* ---------- heures ---------- */
+
+function cycleLabel(e, s) {
+  return (e || s) ? `${e || '—'} → ${s || '—'}` : '—';
+}
 function renderHeuresTab() {
   const date = document.getElementById('h-date').value;
   const groupe = document.getElementById('h-groupe').value;
@@ -931,6 +1003,9 @@ function renderHeuresTab() {
       num: h.num,
       groupe: h.groupe,
       services: op ? op.services : '—',
+      cycle1: cycleLabel(h.entree1, h.sortie1),
+      cycle2: cycleLabel(h.entree2, h.sortie2),
+      cycle3: cycleLabel(h.entree3, h.sortie3),
       heures: h.heures
     });
   });
@@ -943,12 +1018,15 @@ function renderHeuresTab() {
       <td data-label="Numéro">${r.num}</td>
       <td data-label="Groupe">${r.groupe}</td>
       <td data-label="Services">${r.services||'—'}</td>
+      <td data-label="Cycle 1">${r.cycle1}</td>
+        <td data-label="Cycle 2">${r.cycle2}</td>
+        <td data-label="Cycle 3">${r.cycle3}</td>
       <td data-label="Heures"><strong>${fmt(r.heures,2)} h</strong></td>
     </tr>`;
-  }).join('') : '<tr class="empty-row"><td colspan="5">Aucune donnée pour ce filtre</td></tr>';
+  }).join('') : '<tr class="empty-row"><td colspan="8">Aucune donnée pour ce filtre</td></tr>';
   
   document.getElementById('h-total-heures').textContent = data.length ? fmt(totalH, 2) : '—';
-}
+} 
 
 window.__renderers.users = renderUsers;
 window.__renderers.operatrice = renderOps;
