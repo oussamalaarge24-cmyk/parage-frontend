@@ -51,7 +51,15 @@
       <h2><span class="n">·</span>Derniers lots enregistrés</h2>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>ID Lot</th><th>Certificat</th><th>Espèce</th><th>Taille</th></tr></thead>
+          <thead>
+            <tr>
+              <th>ID Lot</th>
+              <th>Certificat</th>
+              <th>Espèce</th>
+              <th>Taille</th>
+              <th>Actions</th>
+            </tr>
+            </thead>
           <tbody id="lot-table"></tbody>
         </table>
       </div>
@@ -146,18 +154,65 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   document.getElementById('panel-' + t.dataset.tab).classList.add('active');
 }));
 
-async function saveLot(){
+// Global variable
+let editLotId = null;
+
+async function saveLot() {
   const certificat = document.getElementById('lot-certificat').value.trim();
   const espece = document.getElementById('lot-espece').value.trim();
   const taille = document.getElementById('lot-taille').value.trim();
-  if(!certificat){ toast('Le numéro de certificat est requis'); return; }
-  const row = await DB.add('lot', { certificat, espece, taille });
-  ['lot-certificat','lot-espece','lot-taille'].forEach(id => document.getElementById(id).value='');
-  toast('Lot ' + certificat + ' enregistré');
-  document.getElementById('cuit-lot').innerHTML = lotOptions(row.id);
-  renderLots();
-}
 
+  if (!certificat) {
+    toast('Le numéro de certificat est requis');
+    return;
+  }
+
+  let row;
+
+  if (editLotId !== null) {
+    // Update existing lot
+    row = await DB.update('lot', editLotId, {
+      certificat,
+      espece,
+      taille
+    });
+
+    toast('Lot modifié');
+    editLotId = null;
+  } else {
+    // Create new lot
+    row = await DB.add('lot', {
+      certificat,
+      espece,
+      taille
+    });
+
+    toast('Lot ' + certificat + ' enregistré');
+  }
+
+  // Clear form
+  ['lot-certificat', 'lot-espece', 'lot-taille'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+
+  // Refresh list
+  renderLots();
+
+  // Refresh lot dropdown
+  const lastLot = DB.last('lot');
+  document.getElementById('cuit-lot').innerHTML =
+    lotOptions(lastLot ? lastLot.id : null);
+}
+function editLot(id) {
+  const lot = DB.get('lot').find(l => l.id === id);
+  if (!lot) return;
+
+  document.getElementById('lot-certificat').value = lot.certificat;
+  document.getElementById('lot-espece').value = lot.espece || '';
+  document.getElementById('lot-taille').value = lot.taille || '';
+
+  window.editLotId = id;
+}
 function renderLots(){
   const lots = DB.get('lot');
   const last3 = lots.slice(-3).reverse();
@@ -167,7 +222,23 @@ function renderLots(){
       <td data-label="Certificat">${l.certificat}</td>
       <td data-label="Espèce">${l.espece||'—'}</td>
       <td data-label="Taille">${l.taille||'—'}</td>
-    </tr>`).join('') : `<tr class="empty-row"><td colspan="4">Aucun lot enregistré pour le moment</td></tr>`;
+      <td>
+        <button
+          class="btn btn-secondary"
+          onclick="editLot(${l.id})"
+          style="padding:6px 10px;min-height:32px;font-size:12px">
+          Modifier
+        </button>
+    
+        <button
+          class="btn btn-danger"
+          data-del="lot"
+          data-id="${l.id}"
+          style="padding:6px 10px;min-height:32px;font-size:12px">
+          Suppr.
+        </button>
+      </td>
+    </tr>`).join('') : `<tr class="empty-row"><td colspan="5">Aucun lot enregistré pour le moment</td></tr>`;
 }
 
 async function saveCuit(){
