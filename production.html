@@ -600,6 +600,7 @@ document.getElementById('pe-date').value = computeDateProduction();
 document.getElementById('h-date').value = computeDateProduction();
 
 /* ---------- heures ---------- */
+/*
 function countCycles(h) {
   let cycles = 0;
 
@@ -608,7 +609,7 @@ function countCycles(h) {
   if (h.entree3 && h.sortie3) cycles++;
 
   return cycles;
-}
+} */
 function renderHeuresTab() {
   const date = document.getElementById('h-date').value;
   const groupe = document.getElementById('h-groupe').value;
@@ -645,7 +646,7 @@ function renderHeuresTab() {
       <td data-label="Numéro">${r.num}</td>
       <td data-label="Groupe">${r.groupe}</td>
       <td data-label="Services">${r.services||'—'}</td>
-      td data-label="Cycle 1">${r.cycle1}</td>
+      <td data-label="Cycle 1">${r.cycle1}</td>
         <td data-label="Cycle 2">${r.cycle2}</td>
         <td data-label="Cycle 3">${r.cycle3}</td>
       <td data-label="Heures"><strong>${fmt(r.heures,2)} h</strong></td>
