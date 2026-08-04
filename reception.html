@@ -203,16 +203,16 @@ async function saveLot() {
   document.getElementById('cuit-lot').innerHTML =
     lotOptions(lastLot ? lastLot.id : null);
 }
-function editLot(id) {
-  const lot = DB.get('lot').find(l => l.id === id);
-  if (!lot) return;
+//function editLot(id) {
+ // const lot = DB.get('lot').find(l => l.id === id);
+ // if (!lot) return;
 
-  document.getElementById('lot-certificat').value = lot.certificat;
-  document.getElementById('lot-espece').value = lot.espece || '';
-  document.getElementById('lot-taille').value = lot.taille || '';
+//  document.getElementById('lot-certificat').value = lot.certificat;
+//  document.getElementById('lot-espece').value = lot.espece || '';
+//  document.getElementById('lot-taille').value = lot.taille || '';
 
-  window.editLotId = id;
-}
+ // window.editLotId = id;
+//}
 function renderLots(){
   const lots = DB.get('lot');
   const last3 = lots.slice(-3).reverse();
