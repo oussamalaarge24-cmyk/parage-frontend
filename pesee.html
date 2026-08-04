@@ -135,7 +135,9 @@ function renderProd(){
   const cd = document.getElementById('caisses-display');
   if(cd) cd.textContent = totalCaisses;
 
-  const last = DB.last('production');
+  //const last = DB.last('production');
+  const last = DB.get('production')
+  .sort((a, b) => b.id - a.id)[0];
   const tbody = document.getElementById('prod-table');
   if(!last){
     tbody.innerHTML = `<tr class="empty-row"><td colspan="7">Aucune production saisie aujourd'hui</td></tr>`;
