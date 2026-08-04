@@ -215,7 +215,7 @@ async function saveLot() {
 //}
 function renderLots(){
   const lots = DB.get('lot');
-  const last3 = lots.slice(-3).reverse();
+  const last3 = lots.slice(-6).reverse();
   document.getElementById('lot-table').innerHTML = last3.length ? last3.map(l => `
     <tr>
       <td data-label="ID Lot"><span class="ticket">${l.id}</span></td>
