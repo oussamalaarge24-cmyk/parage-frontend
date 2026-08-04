@@ -142,23 +142,23 @@ function renderProd(){
   .sort((a, b) => b.id - a.id)
   .slice(0, 10);
   const tbody = document.getElementById('prod-table');
-  if(!last){
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">Aucune production saisie aujourd'hui</td></tr>`;
-    return;
-  }
-  const lot = DB.get('lot').find(l=>l.id===last.idLot);
-  const op = DB.get('operatrice').find(o=>o.id===last.idOperatrice);
-  const nom = op ? ('N° ' + op.num + ' — ' + op.nomPrenom) : '—';
+  //if(!last){
+   // tbody.innerHTML = `<tr class="empty-row"><td colspan="7">Aucune production saisie aujourd'hui</td></tr>`;
+   // return;
+ // }
+  //const lot = DB.get('lot').find(l=>l.id===last.idLot);
+  //const op = DB.get('operatrice').find(o=>o.id===last.idOperatrice);
+ // const nom = op ? ('N° ' + op.num + ' — ' + op.nomPrenom) : '—';
 
   tbody.innerHTML = '';
 
-//if (!last10.length) {
- // tbody.innerHTML = `
-  //  <tr class="empty-row">
-   //   <td colspan="6">Aucune production saisie aujourd'hui</td>
- //   </tr>`;
- // return;
-//}
+if (!last10.length) {
+  tbody.innerHTML = `
+   <tr class="empty-row">
+      <td colspan="6">Aucune production saisie aujourd'hui</td>
+    </tr>`;
+  return;
+}
 
 last10.forEach(last => {
   const lot = DB.get('lot').find(l => l.id === last.idLot);
