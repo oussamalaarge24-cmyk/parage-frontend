@@ -330,6 +330,17 @@ const DB = {
 
   get(table) { return this.cache[table] || []; },
 
+  async fetchTable(table) {
+    try {
+      const res = await fetch(`${API_URL}/${table}`, { headers: getAuthHeaders() });
+      if (res.ok) {
+        this.cache[table] = await res.json();
+      }
+    } catch (e) {
+      console.warn(`⚠️ Failed to refetch table: ${table}`);
+    }
+  },
+
   async add(table, record) {
     const res = await fetch(`${API_URL}/${table}`, {
       method: 'POST',
@@ -424,19 +435,34 @@ document.addEventListener('click', async function (e) {
 
 window.DB_READY = DB.init();
 
-// Auto-actualisation toutes les 5 secondes
-setInterval(async () => {
-  await DB.init(true);
-  if (typeof renderUsers === 'function') renderUsers();
-  if (typeof renderProd === 'function') renderProd();
-  if (typeof renderLots === 'function') renderLots();
-  if (typeof renderCuit === 'function') renderCuit();
-  if (typeof renderDechets === 'function') renderDechets();
-  if (typeof renderOps === 'function' && currentEditId === null) {
-    renderOps();
-}
-  if (typeof renderRendement === 'function') renderRendement();
-  if (typeof renderCertificats === 'function') renderCertificats();
-  if (typeof renderFrais === 'function') renderFrais();
-  if (typeof renderPertes === 'function') renderPertes();
-}, 5000);
+// ── WebSockets / Realtime updates ──────────────────────────────
+
+(function setupSockets() {
+  const script = document.createElement('script');
+  const serverUrl = API_URL.replace(/\/api\/?$/, '');
+  script.src = serverUrl + '/socket.io/socket.io.js';
+  script.onload = () => {
+    if (typeof io !== 'undefined') {
+      const socket = io(serverUrl);
+      socket.on('db_changed', async ({ table }) => {
+        if (table) {
+          // Refetch only the changed table
+          await DB.fetchTable(table);
+          
+          // Re-render the specific table's simple view
+          if (typeof window.__renderers[table] === 'function') {
+            window.__renderers[table]();
+          }
+          
+          // Re-render global dashboards if they exist on the page
+          if (typeof renderRendement === 'function') renderRendement();
+          if (typeof renderCertificats === 'function') renderCertificats();
+          if (typeof renderHeuresTab === 'function') renderHeuresTab();
+          if (typeof renderPertes === 'function') renderPertes();
+        }
+      });
+    }
+  };
+  script.onerror = () => console.warn('Socket.IO disconnected. Auto-refresh off.');
+  document.head.appendChild(script);
+})();

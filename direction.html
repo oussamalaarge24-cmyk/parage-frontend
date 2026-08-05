@@ -298,13 +298,7 @@ window.DB_READY.then(() => {
   renderRendement(); renderCertificats(); renderHeuresTab();
 });
 
-// Auto-actualisation toutes les 5 secondes
-setInterval(async () => {
-  await DB.init(true);
-  if (typeof renderRendement === 'function') renderRendement();
-  if (typeof renderCertificats === 'function') renderCertificats();
-  if (typeof renderHeuresTab === 'function') renderHeuresTab();
-}, 5000);
+
 
 
 </script>
