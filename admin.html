@@ -795,11 +795,11 @@ function renderCertificats(){
   const date   = document.getElementById('c-date').value;
   const groupe = document.getElementById('c-groupe').value;
 
-  // ===== Production (Poids filet) =====
+  // ===== Production (Poids filet) — filtrage via createdAt pour contourner le bug minuit =====
   const productions = DB.get('production').filter(p =>
-  (!date || p.dateProduction === date) &&
-  (!groupe || String(p.groupe) === String(groupe))
-);
+    (!date || isProductionDateMatch(p.createdAt, date, null)) &&
+    (!groupe || String(p.groupe) === String(groupe))
+  );
 
   // ===== Poids cuit =====
   const cuitRows = DB.get('poidscuit').filter(c =>

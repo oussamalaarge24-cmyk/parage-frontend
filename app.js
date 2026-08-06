@@ -176,11 +176,52 @@ function isDateMatch(d, dStart, dEnd) {
   return d >= dStart && d <= dEnd;
 }
 
+/**
+ * Vérifie si un enregistrement Production appartient à la journée de production
+ * identifiée par dateStr (ex: "2026-08-05").
+ *
+ * Règle : la journée X couvre createdAt ∈ [X 00:00:00 → X+1 06:00:00]
+ * Cela contourne le bug minuit où dateProduction/heure sont faux côté client.
+ *
+ * Pour un filtre de plage (dateStart → dateEnd) :
+ *   on inclut tout ce dont le shift appartient à l'une des dates de la plage.
+ */
+function isProductionDateMatch(createdAtRaw, dStart, dEnd) {
+  if (!dStart && !dEnd) return true;
+  if (!createdAtRaw) return false;
+
+  const ts = new Date(createdAtRaw).getTime();
+  if (isNaN(ts)) return false;
+
+  // Helper : retourne [debut, fin[ d'une journée de production
+  function shiftWindow(dateStr) {
+    const start = new Date(dateStr + 'T00:00:00.000Z').getTime();
+    // +1 jour + 6h = +30h
+    const end   = new Date(dateStr + 'T00:00:00.000Z').getTime() + 30 * 3600 * 1000;
+    return { start, end };
+  }
+
+  if (dStart && !dEnd) {
+    const { start, end } = shiftWindow(dStart);
+    return ts >= start && ts < end;
+  }
+  if (!dStart && dEnd) {
+    const { end } = shiftWindow(dEnd);
+    return ts < end;
+  }
+  // Plage dStart → dEnd : inclure si createdAt tombe dans LE shift de n'importe quelle date de la plage
+  const winStart = new Date(dStart + 'T00:00:00.000Z').getTime();
+  const winEnd   = new Date(dEnd   + 'T00:00:00.000Z').getTime() + 30 * 3600 * 1000;
+  return ts >= winStart && ts < winEnd;
+}
+
 function computeResultats(filterDateStart, filterGroupe, filterDateEnd = null) {
+  // Production : filtrage via createdAt (serveur) pour contourner le bug minuit
   const prod = DB.get('production').filter(p =>
-    isDateMatch(p.dateProduction, filterDateStart, filterDateEnd) &&
+    isProductionDateMatch(p.createdAt, filterDateStart, filterDateEnd) &&
     (!filterGroupe || String(p.groupe) === String(filterGroupe))
   );
+  // poidscuit et heures : dateProduction reste fiable (pas de saisie automatique nocturne)
   const cuit = DB.get('poidscuit').filter(c =>
     isDateMatch(c.dateProduction, filterDateStart, filterDateEnd) &&
     (!filterGroupe || String(c.groupe) === String(filterGroupe))
