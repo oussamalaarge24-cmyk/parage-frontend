@@ -289,10 +289,20 @@ function computeResultats(filterDateStart, filterGroupe, filterDateEnd = null) {
              heures: heuresOp, kph, yieldVal };
   });
 
+  // KPH global : on comptabilise uniquement les heures des opératrices du service "Grattage"
+  const heuresGrattage = heuresRows.reduce((s, h) => {
+    const op = DB.get('operatrice').find(o =>
+      normalizeOperatriceNum(o.num) === normalizeOperatriceNum(h.num) &&
+      String(o.groupe) === String(h.groupe)
+    );
+    const isGrattage = op && op.services && op.services.trim().toLowerCase() === 'grattage';
+    return s + (isGrattage ? (Number(h.heures) || 0) : 0);
+  }, 0);
+
   return {
     rows, totalFilet, totalCuit, totalHeures, totalCaisses, totalFrais, totalRecordsCuit: cuit.length,
-    globalKph   : totalHeures ? (totalFilet / totalHeures)  : null,
-    globalYield : totalFrais  ? (totalFilet / totalFrais)   : null
+    globalKph   : heuresGrattage ? (totalFilet / heuresGrattage) : null,
+    globalYield : totalFrais     ? (totalFilet / totalFrais)     : null
   };
 }
 

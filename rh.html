@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chef de production — KPH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="topbar-slot"></div>
+
+<div class="page">
+  <div class="page-head">
+    <div class="eyebrow"></div>
+    <h1></h1>
+    <p>RH</p>
+  </div>
+
+  <div class="tabs">
+    
+    <div class="tab" data-tab="heures">Heures</div>
+    <!--<div class="tab" data-tab="grilles">Grilles </div>-->
+  </div>
+
+ 
+
+ 
+  
+
+  <!-- ================= HEURES ================= -->
+  <div class="tabpanel" id="panel-heures">
+    <div class="card">
+      <h2><span class="n">01</span>Filtres</h2>
+      <div class="grid-3">
+        <div class="field"><label>Date</label><input type="date" id="h-date" onchange="renderHeuresTab()"></div>
+        <div class="field"><label>Groupe</label><select id="h-groupe" onchange="renderHeuresTab()">
+          <option value="">Tous les groupes</option><option value="1">Groupe 1</option><option value="2">Groupe 2</option>
+        </select></div>
+        <div class="field"><label>Service</label><select id="h-service" onchange="renderHeuresTab()">
+          <option value="">Tous les services</option>
+        </select></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="heures-card-header">
+        <h2><span class="n">·</span>Total Heures Travaillées</h2>
+        <div class="heures-card-total">Total : <span id="h-total-heures">—</span> h</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Opératrice</th><th>Numéro</th><th>Groupe</th><th>Services</th><th>Cycle 1</th>
+            <th>Cycle 2</th><th>Cycle 3</th><th>Heures</th></tr></thead>
+          <tbody id="heures-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  
+
+</div>
+
+<script src="app.js"></script>
+<script>
+checkAuth(['rh', 'admin']);
+document.getElementById('topbar-slot').outerHTML = buildTopbar('Ressources Humaines');
+
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tabpanel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+  const map = { rendement:renderRendement, certificats:renderCertificats, frais:renderFrais, pertes:renderPertes, ops:renderOps, heures:renderHeuresTab, grilles:renderRendement };
+  if(map[t.dataset.tab]) map[t.dataset.tab]();
+}));
+
+// Define updateServiceOptions before it's used
+function updateServiceOptions() {
+  const select = document.getElementById('h-service');
+  if (!select) return;
+  const currentVal = select.value;
+  const ops = DB.get('operatrice');
+  const servicesSet = new Set();
+  ops.forEach(o => {
+    if (o.services) {
+      o.services.split(',').forEach(s => {
+        const serv = s.trim();
+        if (serv) servicesSet.add(serv);
+      });
+    }
+  });
+  const services = Array.from(servicesSet).sort();
+  let html = '<option value="">Tous les services</option>';
+  services.forEach(s => {
+    html += `<option value="${s}" ${s === currentVal ? 'selected' : ''}>${s}</option>`;
+  });
+  select.innerHTML = html;
+}
+
+
+
+
+
+
+
+document.getElementById('h-date').value = computeDateProduction();
+
+/* ---------- heures ---------- */
+/*
+function countCycles(h) {
+  let cycles = 0;
+
+  if (h.entree1 && h.sortie1) cycles++;
+  if (h.entree2 && h.sortie2) cycles++;
+  if (h.entree3 && h.sortie3) cycles++;
+
+  return cycles;
+} */
+
+function cycleLabel(e, s) {
+  return (e || s) ? `${e || '—'} → ${s || '—'}` : '—';
+}
+function renderHeuresTab() {
+  const date = document.getElementById('h-date').value;
+  const groupe = document.getElementById('h-groupe').value;
+  const service = document.getElementById('h-service').value.trim().toLowerCase();
+  
+  let rows = DB.get('heures').filter(h => 
+    (!date || h.dateProduction === date) &&
+    (!groupe || String(h.groupe) === String(groupe))
+  );
+  
+  const data = [];
+  rows.forEach(h => {
+    const op = DB.get('operatrice').find(o => o.num === h.num && String(o.groupe) === String(h.groupe));
+    const opServices = op && op.services ? op.services.toLowerCase() : '';
+    if (service && !opServices.includes(service)) return;
+    
+    data.push({
+      operatrice: op ? op.nomPrenom : h.nomPrenom,
+      num: h.num,
+      groupe: h.groupe,
+      services: op ? op.services : '—',
+      cycle1: cycleLabel(h.entree1, h.sortie1),
+      cycle2: cycleLabel(h.entree2, h.sortie2),
+      cycle3: cycleLabel(h.entree3, h.sortie3),
+      heures: h.heures
+    });
+  });
+  
+  let totalH = 0;
+  document.getElementById('heures-table').innerHTML = data.length ? data.map(r => {
+    totalH += Number(r.heures) || 0;
+    return `<tr>
+      <td data-label="Opératrice">${r.operatrice}</td>
+      <td data-label="Numéro">${r.num}</td>
+      <td data-label="Groupe">${r.groupe}</td>
+      <td data-label="Services">${r.services||'—'}</td>
+      <td data-label="Cycle 1">${r.cycle1}</td>
+        <td data-label="Cycle 2">${r.cycle2}</td>
+        <td data-label="Cycle 3">${r.cycle3}</td>
+      <td data-label="Heures"><strong>${fmt(r.heures,2)} h</strong></td>
+    </tr>`;
+  }).join('') : '<tr class="empty-row"><td colspan="8">Aucune donnée pour ce filtre</td></tr>';
+  
+  document.getElementById('h-total-heures').textContent = data.length ? fmt(totalH, 2) : '—';
+}
+
+
+window.__renderers.heures = renderHeuresTab;
+
+window.DB_READY.then(() => {
+  renderHeuresTab();
+});
+</script>
+</body>
+</html>

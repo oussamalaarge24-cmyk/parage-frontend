@@ -390,7 +390,7 @@
     const user = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
     if (user && user.role) {
       const map = { admin:'admin.html', chef:'production.html', pesee:'pesee.html',
-                    reception:'reception.html', pointage:'pointage.html', direction:'direction.html' };
+                    reception:'reception.html', pointage:'pointage.html', direction:'direction.html', rh:'rh.html' };
       window.location.replace(map[user.role] || 'index.html');
     }
   } catch(e) {}
@@ -453,7 +453,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     // Redirect
     const redirects = {
       admin:'admin.html', chef:'production.html', pesee:'pesee.html',
-      reception:'reception.html', pointage:'pointage.html', direction:'direction.html'
+      reception:'reception.html', pointage:'pointage.html', direction:'direction.html' ,rh:'rh.html'
     };
 
     // Flash success
