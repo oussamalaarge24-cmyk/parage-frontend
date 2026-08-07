@@ -360,6 +360,7 @@ function computePertesDashboard(filterDate, filterGroupe) {
 // ── DB: async CRUD via REST API ────────────────────────────────
 
 const DB = {
+  _pending: new Set(),   // tables with an active POST in-flight
   cache: {},
 
   async init(silent = false) {
@@ -393,16 +394,25 @@ const DB = {
   },
 
   async add(table, record) {
-    const res = await fetch(`${API_URL}/${table}`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(record)
-    });
-    if (!res.ok) throw new Error(`add ${table}: HTTP ${res.status}`);
-    const saved = await res.json();
-    if (!this.cache[table]) this.cache[table] = [];
-    this.cache[table].push(saved);
-    return saved;
+    // Guard: reject duplicate requests for the same table while one is in-flight
+    if (this._pending.has(table)) {
+      throw new Error('save_in_progress');
+    }
+    this._pending.add(table);
+    try {
+      const res = await fetch(`${API_URL}/${table}`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(record)
+      });
+      if (!res.ok) throw new Error(`add ${table}: HTTP ${res.status}`);
+      const saved = await res.json();
+      if (!this.cache[table]) this.cache[table] = [];
+      this.cache[table].push(saved);
+      return saved;
+    } finally {
+      this._pending.delete(table);
+    }
   },
 
   async update(table, id, patch) {

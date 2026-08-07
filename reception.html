@@ -158,50 +158,47 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
 let editLotId = null;
 
 async function saveLot() {
-  const certificat = document.getElementById('lot-certificat').value.trim();
-  const espece = document.getElementById('lot-espece').value.trim();
-  const taille = document.getElementById('lot-taille').value.trim();
+  const btn = document.querySelector('#panel-lot .btn-primary');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  const origText = btn.textContent;
+  btn.textContent = 'Enregistrement…';
+  try {
+    const certificat = document.getElementById('lot-certificat').value.trim();
+    const espece = document.getElementById('lot-espece').value.trim();
+    const taille = document.getElementById('lot-taille').value.trim();
 
-  if (!certificat) {
-    toast('Le numéro de certificat est requis');
-    return;
-  }
+    if (!certificat) {
+      toast('Le numéro de certificat est requis');
+      return;
+    }
 
-  let row;
+    let row;
 
-  if (editLotId !== null) {
-    // Update existing lot
-    row = await DB.update('lot', editLotId, {
-      certificat,
-      espece,
-      taille
+    if (editLotId !== null) {
+      row = await DB.update('lot', editLotId, { certificat, espece, taille });
+      toast('Lot modifié');
+      editLotId = null;
+    } else {
+      row = await DB.add('lot', { certificat, espece, taille });
+      toast('Lot ' + certificat + ' enregistré');
+    }
+
+    ['lot-certificat', 'lot-espece', 'lot-taille'].forEach(id => {
+      document.getElementById(id).value = '';
     });
 
-    toast('Lot modifié');
-    editLotId = null;
-  } else {
-    // Create new lot
-    row = await DB.add('lot', {
-      certificat,
-      espece,
-      taille
-    });
+    renderLots();
 
-    toast('Lot ' + certificat + ' enregistré');
+    const lastLot = DB.last('lot');
+    document.getElementById('cuit-lot').innerHTML =
+      lotOptions(lastLot ? lastLot.id : null);
+  } catch(e) {
+    if (e.message !== 'save_in_progress') toast('Erreur réseau, réessayez');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
   }
-
-  // Clear form
-  ['lot-certificat', 'lot-espece', 'lot-taille'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-
-  // Refresh list
-  renderLots();
-
-  // Refresh lot dropdown
-  const lastLot = DB.last('lot');
-  document.getElementById('cuit-lot').innerHTML =
-    lotOptions(lastLot ? lastLot.id : null);
 }
 //function editLot(id) {
  // const lot = DB.get('lot').find(l => l.id === id);
@@ -237,22 +234,34 @@ function renderLots(){
 }
 
 async function saveCuit(){
-  const idLot = Number(document.getElementById('cuit-lot').value);
-  const lot = DB.get('lot').find(l=>l.id===idLot);
-  if(!lot){ toast('Créez d\'abord un lot'); return; }
-  const record = {
-    dateProduction: computeDateProduction(),
-    heure: nowHM(),
-    groupe: Number(document.getElementById('cuit-groupe').value),
-    certificat: lot.certificat, espece: lot.espece, taille: lot.taille,
-    numeroChariot: Number(document.getElementById('cuit-chariot').value)||0,
-    poidsGrille: Number(document.getElementById('cuit-poids').value)||0
-  };
-  const row = await DB.add('poidscuit', record);
-  document.getElementById('cuit-poids').value = '';
-  document.getElementById('cuit-poids').focus();
-  toast('Poids cuit enregistré à ' + record.heure);
-  renderCuit();
+  const btn = document.querySelector('#panel-cuit .btn-primary');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  const origText = btn.textContent;
+  btn.textContent = 'Enregistrement…';
+  try {
+    const idLot = Number(document.getElementById('cuit-lot').value);
+    const lot = DB.get('lot').find(l=>l.id===idLot);
+    if(!lot){ toast('Créez d\'abord un lot'); return; }
+    const record = {
+      dateProduction: computeDateProduction(),
+      heure: nowHM(),
+      groupe: Number(document.getElementById('cuit-groupe').value),
+      certificat: lot.certificat, espece: lot.espece, taille: lot.taille,
+      numeroChariot: Number(document.getElementById('cuit-chariot').value)||0,
+      poidsGrille: Number(document.getElementById('cuit-poids').value)||0
+    };
+    const row = await DB.add('poidscuit', record);
+    document.getElementById('cuit-poids').value = '';
+    document.getElementById('cuit-poids').focus();
+    toast('Poids cuit enregistré à ' + record.heure);
+    renderCuit();
+  } catch(e) {
+    if (e.message !== 'save_in_progress') toast('Erreur réseau, réessayez');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
 }
 function renderCuit() {
   const rows = DB.get('poidscuit')
@@ -280,18 +289,30 @@ function renderCuit() {
     : `<tr class="empty-row"><td colspan="6">Aucune saisie aujourd'hui</td></tr>`;
 }
 async function saveDechets(){
-  const record = {
-    dateProduction: computeDateProduction(),
-    heure: nowHM(),
-    groupe: Number(document.getElementById('dech-groupe').value),
-    numeroBag: Number(document.getElementById('dech-bag').value)||0,
-    poidsTare: Number(document.getElementById('dech-tare').value)||0,
-    poidsNet: Number(document.getElementById('dech-net').value)||0
-  };
-  const row = await DB.add('dechets', record);
-  ['dech-bag','dech-tare','dech-net'].forEach(id => document.getElementById(id).value='');
-  toast('Déchets enregistrés à ' + record.heure);
-  renderDechets();
+  const btn = document.querySelector('#panel-dechets .btn-primary');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  const origText = btn.textContent;
+  btn.textContent = 'Enregistrement…';
+  try {
+    const record = {
+      dateProduction: computeDateProduction(),
+      heure: nowHM(),
+      groupe: Number(document.getElementById('dech-groupe').value),
+      numeroBag: Number(document.getElementById('dech-bag').value)||0,
+      poidsTare: Number(document.getElementById('dech-tare').value)||0,
+      poidsNet: Number(document.getElementById('dech-net').value)||0
+    };
+    const row = await DB.add('dechets', record);
+    ['dech-bag','dech-tare','dech-net'].forEach(id => document.getElementById(id).value='');
+    toast('Déchets enregistrés à ' + record.heure);
+    renderDechets();
+  } catch(e) {
+    if (e.message !== 'save_in_progress') toast('Erreur réseau, réessayez');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
 }
 function renderDechets(){
   const rows = DB.get('dechets').filter(r => r.dateProduction === computeDateProduction());

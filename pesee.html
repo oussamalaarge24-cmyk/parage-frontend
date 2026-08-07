@@ -105,26 +105,41 @@ async function saveProduction(){
   const poidsFilet = Number(document.getElementById('p-poids').value)||0;
   const currentGroup = document.getElementById('p-groupe').value;
   const op = DB.get('operatrice').find(o => normalizeOperatriceNum(o.num) === num && String(o.groupe) === String(currentGroup)) || null;
+
+  // Validate first — before disabling the button
   if(!num){ toast('Indiquez le numéro de jeton'); return; }
   if(!op){ toast('Numéro de jeton inconnu pour ce groupe'); return; }
   if(!poidsFilet){ toast('Indiquez le poids filet'); return; }
   if(poidsFilet > 17){ toast('Le poids ne peut pas dépasser 17 kg'); return; }
 
-  const record = {
-    dateSaisie: todayISO(),
-    dateProduction: computeDateProduction(),
-    heure: nowHM(),
-    idOperatrice: op.id,
-    idLot, poidsFilet,
-    nombreCaisse: 1,
-    groupe: Number(document.getElementById('p-groupe').value)
-  };
-  const row = await DB.add('production', record);
-  document.getElementById('p-numero').value = '';
-  document.getElementById('p-poids').value = '';
-  document.getElementById('p-numero').focus();
-  toast('Production enregistrée à ' + record.heure);
-  renderProd();
+  const btn = document.querySelector('.btn.btn-primary');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  const origText = btn.textContent;
+  btn.textContent = 'Enregistrement…';
+
+  try {
+    const record = {
+      dateSaisie: todayISO(),
+      dateProduction: computeDateProduction(),
+      heure: nowHM(),
+      idOperatrice: op.id,
+      idLot, poidsFilet,
+      nombreCaisse: 1,
+      groupe: Number(document.getElementById('p-groupe').value)
+    };
+    const row = await DB.add('production', record);
+    document.getElementById('p-numero').value = '';
+    document.getElementById('p-poids').value = '';
+    document.getElementById('p-numero').focus();
+    toast('Production enregistrée à ' + record.heure);
+    renderProd();
+  } catch(e) {
+    if (e.message !== 'save_in_progress') toast('Erreur réseau, réessayez');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
 }
 
 function renderProd(){
