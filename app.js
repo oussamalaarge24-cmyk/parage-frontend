@@ -221,9 +221,10 @@ function computeResultats(filterDateStart, filterGroupe, filterDateEnd = null) {
     isProductionDateMatch(p.createdAt, filterDateStart, filterDateEnd) &&
     (!filterGroupe || String(p.groupe) === String(filterGroupe))
   );
-  // poidscuit et heures : dateProduction reste fiable (pas de saisie automatique nocturne)
+  // poidscuit : même fix que production — on filtre via createdAt (shift 06:00→06:00)
+  //              pour éviter le bug minuit (enregistrements de 23:xx perdus après minuit)
   const cuit = DB.get('poidscuit').filter(c =>
-    isDateMatch(c.dateProduction, filterDateStart, filterDateEnd) &&
+    isProductionDateMatch(c.createdAt, filterDateStart, filterDateEnd) &&
     (!filterGroupe || String(c.groupe) === String(filterGroupe))
   );
   const heuresRows = DB.get('heures').filter(h =>

@@ -452,9 +452,9 @@ function renderCertificats(){
     (!groupe || String(p.groupe) === String(groupe))
   );
 
-  // ===== Poids cuit =====
+  // ===== Poids cuit — même fix que production : filtrage via createdAt (shift 06:00→06:00) =====
   const cuitRows = DB.get('poidscuit').filter(c =>
-    (!date || c.dateProduction === date) &&
+    (!date || isProductionDateMatch(c.createdAt, date, null)) &&
     (!groupe || String(c.groupe) === String(groupe))
   );
 

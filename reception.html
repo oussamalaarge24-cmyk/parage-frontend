@@ -265,7 +265,7 @@ async function saveCuit(){
 }
 function renderCuit() {
   const rows = DB.get('poidscuit')
-    .filter(r => r.dateProduction === computeDateProduction());
+    .filter(r => isProductionDateMatch(r.createdAt, computeDateProduction()));
 
   const lastRows = [...rows]
     .sort((a, b) => b.id - a.id)
