@@ -144,7 +144,11 @@ async function saveProduction(){
 
 function renderProd(){
   const todayProd = computeDateProduction();
-  const prods = DB.get('production').filter(p => p.dateProduction === todayProd);
+  // ✅ Use isProductionDateMatch (shift window 06:00→06:00) instead of
+  //    p.dateProduction === todayProd which breaks after midnight:
+  //    records saved at 23:xx have dateProduction = "today", but after
+  //    midnight computeDateProduction() returns "yesterday" → counter was 0.
+  const prods = DB.get('production').filter(p => isProductionDateMatch(p.createdAt, todayProd));
   let totalCaisses = 0;
   prods.forEach(p => { totalCaisses += Number(p.nombreCaisse) || 0; });
   const cd = document.getElementById('caisses-display');
