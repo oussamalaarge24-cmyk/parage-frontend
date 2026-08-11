@@ -379,8 +379,8 @@ function computePertesDashboard(filterDate, filterGroupe) {
   const perteEau = totalFrais !== null ? (totalFrais - cuitTotal) : null;
   return {
     perteEau, dechetTotal, totalFrais, cuitTotal,
-    pctPerteEau: totalFrais ? (perteEau / totalFrais * 100) : null,
-    pctDechets : totalFrais ? ((dechetTotal / totalFrais) ) : null
+    pctPerteEau: totalFrais ? (perteEau   / totalFrais * 100) : null,
+    pctDechets : totalFrais ? (dechetTotal / totalFrais * 100) : null  // ✅ was missing * 100 → showed 0.4% instead of 41.7%
   };
 }
 
