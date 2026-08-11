@@ -420,7 +420,7 @@ function renderRendement(){
 
   // Global yield = total filet / total frais (all groups combined for the date)
   if (r.globalYield !== null) {
-    document.getElementById('r-yield').textContent = (r.globalYield * 100).toFixed(1) + ' %';
+    document.getElementById('r-yield').textContent = (r.globalYield * 100).toFixed(2) + ' %';
   } else {
     document.getElementById('r-yield').textContent = '—';
   }
