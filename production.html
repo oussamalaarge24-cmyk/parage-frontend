@@ -430,7 +430,7 @@ function renderRendement(){
   }
 
   document.getElementById('rendement-table').innerHTML = r.rows.length ? r.rows.map(row => {
-    let rowYield = row.yieldVal !== null ? (row.yieldVal * 100).toFixed(1) + ' %' : '—';
+    let rowYield = row.yieldVal !== null ? (row.yieldVal * 100).toFixed(2) + ' %' : '—';
     return `<tr>
       <td data-label="Opératrice">${row.operatrice}</td><td data-label="Numéro">${row.num || '—'}</td><td data-label="Groupe">Grp ${row.groupe}</td>
       <td data-label="Poids filet">${fmt(row.poidsFilet)} kg</td><td data-label="Caisses">${row.nbrCaisse}</td>
