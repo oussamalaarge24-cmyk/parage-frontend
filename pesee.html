@@ -66,6 +66,7 @@ checkAuth(['pesee', 'admin']);
 document.getElementById('topbar-slot').outerHTML = buildTopbar('Agent de pesée');
 
 
+// Initial display on page load
 document.getElementById('ds-display').textContent = todayISO();
 document.getElementById('hr-display').textContent = nowHM();
 document.getElementById('dp-display').textContent = computeDateProduction();
@@ -144,10 +145,14 @@ async function saveProduction(){
 
 function renderProd(){
   const todayProd = computeDateProduction();
-  // ✅ Use isProductionDateMatch (shift window 06:00→06:00) instead of
-  //    p.dateProduction === todayProd which breaks after midnight:
-  //    records saved at 23:xx have dateProduction = "today", but after
-  //    midnight computeDateProduction() returns "yesterday" → counter was 0.
+
+  // ✅ Refresh header display here — same moment as the counter update,
+  //    no setInterval needed (mirrors what we do for Total des grilles).
+  document.getElementById('ds-display').textContent = todayISO();
+  document.getElementById('hr-display').textContent = nowHM();
+  document.getElementById('dp-display').textContent = todayProd;
+
+  // ✅ Filter by createdAt shift window (06:00→06:00) — avoids UTC midnight bug
   const prods = DB.get('production').filter(p => isProductionDateMatch(p.createdAt, todayProd));
   let totalCaisses = 0;
   prods.forEach(p => { totalCaisses += Number(p.nombreCaisse) || 0; });

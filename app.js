@@ -92,18 +92,44 @@ function buildTopbar(roleLabel) {
 
 // ── Date / time helpers ────────────────────────────────────────
 
-function todayISO() { return new Date().toISOString().slice(0, 10); }
+// ✅ Shared local-date formatter — uses LOCAL time (getFullYear/Month/Date),
+//    NOT toISOString() which converts to UTC first and breaks at UTC+1 after midnight.
+//    e.g. at 00:25 local (UTC+1) → toISOString gives 23:25 UTC → wrong date.
+//    Restore old behaviour by swapping calls back to toISOString().slice(0,10).
+function localISODate(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+// ✅ FIXED — uses local date to avoid UTC offset bug
+function todayISO() {
+  return localISODate();
+}
+// 🔴 OLD (kept for rollback): function todayISO() { return new Date().toISOString().slice(0, 10); }
 
 function nowHM() {
   const d = new Date();
   return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
+// ✅ FIXED — subtracts 1 day in LOCAL time, then formats in LOCAL time.
+//    Before: at 00:25 local (UTC+1) → setDate(-1) → 06/08 00:25 local
+//            → toISOString() → 05/08 23:25 UTC → slice → "2026-08-05" ❌
+//    After:  at 00:25 local (UTC+1) → setDate(-1) → 06/08 00:25 local
+//            → localISODate()       → "2026-08-06" ✅
 function computeDateProduction() {
   const now = new Date();
   if (now.getHours() < 6) now.setDate(now.getDate() - 1);
-  return now.toISOString().slice(0, 10);
+  return localISODate(now);
 }
+// 🔴 OLD (kept for rollback):
+// function computeDateProduction() {
+//   const now = new Date();
+//   if (now.getHours() < 6) now.setDate(now.getDate() - 1);
+//   return now.toISOString().slice(0, 10);
+// }
 
 function hoursBetween(start, end) {
   if (!start || !end) return 0;
