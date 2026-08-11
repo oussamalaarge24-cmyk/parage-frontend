@@ -277,8 +277,11 @@ function computeResultats(filterDateStart, filterGroupe, filterDateEnd = null) {
     byOperatrice[key].nbrCaisse   += caisses;
     
     if (caisses > 0) {
-      let mf = DB.get('moyenfrais').find(m => m.dateProduction === p.dateProduction && String(m.groupe) === String(p.groupe));
-      if (!mf) mf = DB.get('moyenfrais').find(m => m.dateProduction === p.dateProduction);
+      // ✅ Use filterDateStart (the dashboard date) if available, so old records with
+      //    wrong p.dateProduction (due to the old midnight bug) still find the right rate.
+      const targetDate = filterDateStart || p.dateProduction;
+      let mf = DB.get('moyenfrais').find(m => m.dateProduction === targetDate && String(m.groupe) === String(p.groupe));
+      if (!mf) mf = DB.get('moyenfrais').find(m => m.dateProduction === targetDate);
       if (mf && mf.moyenFrais) {
         byOperatrice[key].fraisIndividuel += caisses * Number(mf.moyenFrais);
       }
@@ -293,12 +296,13 @@ function computeResultats(filterDateStart, filterGroupe, filterDateEnd = null) {
     ? totalFraisFor(filterDateStart, filterGroupe)
     : sumTotalFrais(filterDateStart, filterGroupe, filterDateEnd);
 
-  // Fallback: If totalFrais is 0 but we have a Moyen Frais rate and caisses, compute it
-  if (!totalFrais && filterDateStart && !filterDateEnd) {
-    let fallbackMf = DB.get('moyenfrais').find(m => m.dateProduction === filterDateStart && (!filterGroupe || String(m.groupe) === String(filterGroupe)));
-    if (!fallbackMf) fallbackMf = DB.get('moyenfrais').find(m => m.dateProduction === filterDateStart);
-    if (fallbackMf && fallbackMf.moyenFrais) {
-      totalFrais = totalCaisses * Number(fallbackMf.moyenFrais);
+  // Fallback: If totalFrais is 0 but we have Moyen Frais rates, sum the individual frais.
+  // ✅ This is much more accurate than the old fallback (which multiplied totalCaisses by
+  //    a single group's rate), as it correctly respects different rates for Group 1 vs Group 2.
+  if (!totalFrais) {
+    const totalFraisIndividuel = Object.values(byOperatrice).reduce((s, o) => s + (o.fraisIndividuel || 0), 0);
+    if (totalFraisIndividuel > 0) {
+      totalFrais = totalFraisIndividuel;
     }
   }
 
