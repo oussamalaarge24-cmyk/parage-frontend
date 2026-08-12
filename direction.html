@@ -176,9 +176,10 @@ function renderRendement(){
   }
 
   document.getElementById('rendement-table').innerHTML = r.rows.length ? r.rows.map(row => {
-    let rowYield = row.yieldVal !== null ? (row.yieldVal * 100).toFixed(1) + ' %' : '—';
+    let rowYield = row.yieldVal !== null ? (row.yieldVal * 100).toFixed(2) + ' %' : '—';
     return `<tr>
       <td data-label="Opératrice">${row.operatrice}</td>
+      <td data-label="Numéro">${row.num || '—'}</td>
       <td data-label="Groupe">Grp ${row.groupe}</td>
       <td data-label="Poids filet">${fmt(row.poidsFilet)} kg</td>
       <td data-label="Caisses">${row.nbrCaisse}</td>
@@ -186,7 +187,7 @@ function renderRendement(){
       <td data-label="KPH">${row.kph !== null ? fmt(row.kph,2) : '—'}</td>
       <td data-label="Yield">${rowYield}</td>
     </tr>`;
-  }).join('') : `<tr class="empty-row"><td colspan="7">Aucune donnée pour ce filtre</td></tr>`;
+  }).join('') : `<tr class="empty-row"><td colspan="8">Aucune donnée pour ce filtre</td></tr>`;
 }
 /* ---------- certificats ---------- */
 function renderCertificats(){
@@ -194,10 +195,22 @@ function renderCertificats(){
   const groupe = document.getElementById('c-groupe').value;
 
   // Aggregate poidscuit by certificat (from stored certificat field, or via lot join)
-  const cuitRows = DB.get('poidscuit').filter(c =>
-    (!date   || c.dateProduction === date) &&
-    (!groupe || String(c.groupe) === String(groupe))
-  );
+ // const cuitRows = DB.get('poidscuit').filter(c =>
+ //   (!date   || c.dateProduction === date) &&
+ //   (!groupe || String(c.groupe) === String(groupe))
+  //);
+
+   // ===== Production (Poids filet) — filtrage via createdAt pour contourner le bug minuit =====
+   const productions = DB.get('production').filter(p =>
+   (!date || isProductionDateMatch(p.createdAt, date, null)) &&
+   (!groupe || String(p.groupe) === String(groupe))
+ );
+
+ // ===== Poids cuit — même fix que production : filtrage via createdAt (shift 06:00→06:00) =====
+ const cuitRows = DB.get('poidscuit').filter(c =>
+   (!date || isProductionDateMatch(c.createdAt, date, null)) &&
+   (!groupe || String(c.groupe) === String(groupe))
+ );
 
   const byCert = {};
   cuitRows.forEach(c => {
