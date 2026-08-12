@@ -172,6 +172,7 @@ function renderHeuresTab() {
 window.__renderers.heures = renderHeuresTab;
 
 window.DB_READY.then(() => {
+  updateServiceOptions();
   renderHeuresTab();
 });
 </script>
