@@ -172,6 +172,11 @@ function renderHeuresTab() {
 window.__renderers.heures = renderHeuresTab;
 
 window.DB_READY.then(() => {
+  const tab = document.querySelector('.tab[data-tab="heures"]');
+  const panel = document.getElementById('panel-heures');
+  if (tab) tab.classList.add('active');
+  if (panel) panel.classList.add('active');
+  
   updateServiceOptions();
   renderHeuresTab();
 });
