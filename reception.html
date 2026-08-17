@@ -92,6 +92,20 @@
       <div class="btn-row"><button class="btn btn-primary" onclick="saveCuit()">Enregistrer le poids cuit</button></div>
     </div>
 
+    <!-- ── Compteurs ── -->
+    <div class="stats" style="grid-template-columns:repeat(2,1fr);">
+      <div class="stat card" style="margin:0;">
+        <div class="label">Entrées du jour</div>
+        <div class="value good" id="rec-count-grilles" style="font-size:38px;">—</div>
+        <div style="font-size:11px;color:var(--ink-soft);margin-top:2px;">grilles enregistrées</div>
+      </div>
+      <div class="stat card" style="margin:0;">
+        <div class="label">Total des grilles</div>
+        <div class="value" id="rec-total-poids" style="font-size:38px;color:var(--teal-dark);">—</div>
+        <div style="font-size:11px;color:var(--ink-soft);margin-top:2px;">kg poids cuit</div>
+      </div>
+    </div>
+
     <div class="card">
       <h2><span class="n">·</span>Entrées du jour</h2>
       <div class="table-wrap">
@@ -267,9 +281,16 @@ function renderCuit() {
   const rows = DB.get('poidscuit')
     .filter(r => isProductionDateMatch(r.createdAt, computeDateProduction()));
 
+  // ── Compteurs ──
+  const totalPoids = rows.reduce((s, r) => s + (Number(r.poidsGrille) || 0), 0);
+  const countEl = document.getElementById('rec-count-grilles');
+  const totalEl = document.getElementById('rec-total-poids');
+  if (countEl) countEl.textContent = rows.length;
+  if (totalEl) totalEl.textContent = fmt(totalPoids) + ' kg';
+
   const lastRows = [...rows]
     .sort((a, b) => b.id - a.id)
-    .slice(0, 100);
+    .slice(0, 800);
 
   document.getElementById('cuit-table').innerHTML = lastRows.length
     ? lastRows.map(r => `
