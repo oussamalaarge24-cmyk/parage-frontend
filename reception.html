@@ -290,7 +290,7 @@ function renderCuit() {
 
   const lastRows = [...rows]
     .sort((a, b) => b.id - a.id)
-    .slice(0, 800);
+    .slice(0, 850);
 
   document.getElementById('cuit-table').innerHTML = lastRows.length
     ? lastRows.map(r => `
