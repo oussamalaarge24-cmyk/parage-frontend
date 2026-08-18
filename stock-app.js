@@ -242,14 +242,20 @@ function computeReceptionDashboard(filters){
   const byCamion = {};
   filteredCertifs.forEach(c => { byCamion[c.numCamion] = (byCamion[c.numCamion]||0) + (Number(c.poidsReceptionne)||0); });
 
-  const allCertifs = DB.get('certificats');
-  const totalPoidsReceptionne = allCertifs.reduce((s,c)=>s+(Number(c.poidsReceptionne)||0),0);
+  const totalPoidsReceptionne = filteredCertifs.reduce((s,c)=>s+(Number(c.poidsReceptionne)||0),0);
 
-  const allEntrees = DB.get('entree');
-  const totalPoidsEntree = allEntrees.reduce((s,e)=>s+entreeNet(e),0);
+  const filteredEntrees = DB.get('entree').filter(e => matchesMovementFilters({
+    date: e.dateEntree,
+    taille: e.taille,
+    espece: e.espece,
+    certificat: e.certificat,
+    numCamion: e.numCamion
+  }, filters));
+  
+  const totalPoidsEntree = filteredEntrees.reduce((s,e)=>s+entreeNet(e),0);
 
   const byTaille = {}, byEspece = {};
-  allEntrees.forEach(e => {
+  filteredEntrees.forEach(e => {
     const net = entreeNet(e);
     byTaille[e.taille||'—'] = (byTaille[e.taille||'—']||0) + net;
     byEspece[e.espece||'—'] = (byEspece[e.espece||'—']||0) + net;

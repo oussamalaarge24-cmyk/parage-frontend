@@ -65,7 +65,7 @@
 <script src="app.js"></script>
 <script src="stock-app.js"></script>
 <script>
-document.getElementById('topbar-slot').outerHTML = buildTopbar('Agent de réception');
+document.getElementById('topbar-slot').outerHTML = buildTopbar('Agent de réception', 'FRIGO');
 
 document.getElementById('certificat-list').innerHTML =
   uniqueCertificatNames().map(c => `<option value="${c}"></option>`).join('');

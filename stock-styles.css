@@ -11,15 +11,15 @@
     --line:       #d6dcda;
     --line-soft:  #e6eae8;
   
-    --teal:       #0c5c66;
-    --teal-dark:  #073c44;
-    --teal-tint:  #e3eeee;
+    --teal:       #0b438c;
+    --teal-dark:  #072b5c;
+    --teal-tint:  #e6f0fa;
   
     --amber:      #c98a2e;
     --amber-tint: #faf1de;
   
-    --green:      #2f7a52;
-    --green-tint: #e7f3ea;
+    --green:      #0b438c;
+    --green-tint: #e6f0fa;
   
     --red:        #b8442f;
     --red-tint:   #fbeae6;
@@ -57,7 +57,7 @@
   
   /* ---------- layout shell ---------- */
   .topbar{
-    background:#103b6b;
+    background:var(--teal);
     color:#eaf3f2;
     padding:14px 22px;
     display:flex;

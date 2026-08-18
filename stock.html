@@ -225,7 +225,7 @@
 <script src="app.js"></script>
 <script src="stock-app.js"></script>
 <script>
-document.getElementById('topbar-slot').outerHTML = buildTopbar('Agent stock');
+document.getElementById('topbar-slot').outerHTML = buildTopbar('Agent stock', 'FRIGO');
 
 document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));

@@ -55,14 +55,14 @@ function toast(msg) {
   el._t = setTimeout(() => el.classList.remove('show'), 2200);
 }
 
-function buildTopbar(roleLabel) {
+function buildTopbar(roleLabel, brandText = 'ATELIER&nbsp;DE&nbsp;PARAGE') {
   const user = getCurrentUser();
   const userName = user ? user.nom : '';
   return `
   <div class="topbar">
     <div class="brand" style="display: flex; align-items: center; max-height: 40px;">
       <span class="mark" style="font-weight: 900; font-size: 32px;">B</span>
-      <span class="sub" style="padding: 7px 14px; margin-left: 6px;">ATELIER&nbsp;DE&nbsp;PARAGE</span>
+      <span class="sub" style="padding: 7px 14px; margin-left: 6px;">${brandText}</span>
     </div>
     <span style="padding-left: 240px; color:#FFFFFF; font-weight: 900; font-size: 32px; letter-spacing: 2px;">BMX</span>
 
