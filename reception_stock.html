@@ -108,6 +108,12 @@ async function saveEntree(){
   if(!certificat || !certificatRowsByName(certificat).length){ toast('Certificat introuvable — vérifiez la saisie'); return; }
   if(!numCamion){ toast('Choisissez un camion'); return; }
   if(!numBag){ toast('Indiquez le numéro de bag'); return; }
+  
+  if (!numBag.toUpperCase().includes('X') && findAllEntreesActive(numBag).length > 0) {
+    toast('Ce bag est déjà en stock — attendez sa sortie.');
+    return;
+  }
+
   if(!poids){ toast('Indiquez le poids'); return; }
 
   const poidsTare = getBagTare(numBag);
