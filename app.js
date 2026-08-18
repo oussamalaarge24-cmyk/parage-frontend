@@ -395,7 +395,7 @@ const DB = {
   cache: {},
 
   async init(silent = false) {
-    const tables = ['operatrice','lot','production','poidscuit','dechets','heures','moyenfrais','users'];
+    const tables = ['operatrice','lot','production','poidscuit','dechets','heures','moyenfrais','users','bags','certificats','entree','sortie'];
     try {
       await Promise.all(tables.map(async (table) => {
         const res = await fetch(`${API_URL}/${table}`, {

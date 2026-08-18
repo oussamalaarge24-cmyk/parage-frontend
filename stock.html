@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent stock — KPH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="stock-styles.css">
+</head>
+<body>
+<div id="topbar-slot"></div>
+
+<div class="page">
+  <div class="page-head">
+    <div class="eyebrow">Rôle · Agent stock</div>
+    <h1>Stock, réceptions &amp; mouvements</h1>
+    <p>Suivez le stock en temps réel, gérez les registres de bags/certificats, consultez le tableau de bord réception et enregistrez les sorties.</p>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="stock">1 · Stock</div>
+    <div class="tab" data-tab="bags">2 · Les bags</div>
+    <div class="tab" data-tab="certificats">3 · Certificats</div>
+    <div class="tab" data-tab="receptions">4 · Les réceptions</div>
+    <div class="tab" data-tab="sortie">5 · Sortie</div>
+  </div>
+
+  <!-- ===== TAB 1 : STOCK (dashboard) ===== -->
+  <div class="tabpanel active" id="panel-stock">
+
+    <div class="card">
+      <h2><span class="n">01</span>Filtrer les mouvements</h2>
+      <div class="grid-3">
+        <div class="field"><label>Date</label><input type="date" id="m-date" onchange="renderStock()"></div>
+        <div class="field"><label>Taille</label><select id="m-taille" onchange="renderStock()"><option value="">Toutes</option></select></div>
+        <div class="field"><label>Espèce</label><select id="m-espece" onchange="renderStock()"><option value="">Toutes</option></select></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-secondary" onclick="document.getElementById('m-date').value='';renderStock();">Effacer la date</button></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="label">Poids total en stock</div><div class="value good" id="k-poids">—</div></div>
+      <div class="stat"><div class="label">Nombre de bags en stock</div><div class="value" id="k-nbags">—</div></div>
+    </div>
+
+    <div class="grid-2 split-cards">
+      <div class="card card-accent">
+        <h2><span class="n">·</span>Répartition par taille (%)</h2>
+        <div id="taille-chips"></div>
+      </div>
+
+      <div class="card card-accent">
+        <h2><span class="n">·</span>Répartition par espèce (%)</h2>
+        <div id="espece-chips"></div>
+      </div>
+    </div>
+
+    
+
+    <div class="card">
+      <h2><span class="n">·</span>Mouvements</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>N° BAG</th><th>Taille</th><th>Espèce</th><th>Certificat</th><th>N° Camion</th><th>Poids</th><th>Type</th></tr></thead>
+          <tbody id="mvt-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 2 : LES BAGS ===== -->
+  <div class="tabpanel" id="panel-bags">
+    <div class="card">
+      <h2><span class="n">02</span>Enregistrer un bag</h2>
+      <div class="grid-2">
+        <div class="field">
+          <label>N° BAG</label>
+          <input type="text" id="bag-num" placeholder="538">
+        </div>
+        <div class="field">
+          <label>Poids tare (kg)</label>
+          <input type="number" step="0.01" id="bag-tare" placeholder="220">
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="saveBag()">Enregistrer le bag</button></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">·</span>Bags enregistrés</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>N° BAG</th><th>Poids tare (kg)</th><th></th></tr></thead>
+          <tbody id="bags-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 3 : CERTIFICATS ===== -->
+  <div class="tabpanel" id="panel-certificats">
+    <div class="card">
+      <h2><span class="n">03</span>Enregistrer un certificat</h2>
+      <div class="grid-2">
+        <div class="field">
+          <label>Certificat</label>
+          <input type="text" id="cert-certificat" placeholder="TMIS 237 128 B04">
+        </div>
+        <div class="field">
+          <label>N° Contenaire</label>
+          <input type="text" id="cert-contenaire" placeholder="CONT-4521">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>N° Camion</label>
+          <input type="text" id="cert-camion" placeholder="12345-A-6">
+        </div>
+        <div class="field">
+          <label>Poids réceptionné (kg)</label>
+          <input type="number" step="0.01" id="cert-poids" placeholder="26220">
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="saveCertificat()">Enregistrer le certificat</button></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">·</span>Certificats enregistrés</h2>
+      <p class="hint">Un même certificat peut avoir plusieurs lignes si plusieurs camions livrent sous ce certificat.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Certificat</th><th>Contenaire</th><th>Camion</th><th>Poids réceptionné (kg)</th><th></th></tr></thead>
+          <tbody id="certificats-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 4 : LES RÉCEPTIONS (dashboard) ===== -->
+  <div class="tabpanel" id="panel-receptions">
+    <div class="card">
+      <h2><span class="n">01</span>Filtres</h2>
+      <div class="grid-3">
+        <div class="field"><label>Certificat</label><select id="f-certificat" onchange="syncCamionFilter();renderReceptions();"><option value="">Tous</option></select></div>
+        <div class="field"><label>N° Camion</label><select id="f-camion" onchange="renderReceptions()"><option value="">Tous</option></select></div>
+        <div class="field"><label>Taille</label><select id="f-taille" onchange="renderReceptions()"><option value="">Toutes</option></select></div>
+      </div>
+      <div class="field" style="max-width:260px">
+        <label>Espèce</label>
+        <select id="f-espece" onchange="renderReceptions()"><option value="">Toutes</option></select>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="label">Total poids réceptionné</div><div class="value" id="k-total-recu">—</div></div>
+      <div class="stat"><div class="label">Total poids entré en stock</div><div class="value good" id="k-total-entree">—</div></div>
+    </div>
+
+   
+
+    <div class="grid-2 split-cards">
+      <div class="card card-accent">
+        <h2><span class="n">·</span>Répartition par taille (%)</h2>
+        <div id="r-taille-chips"></div>
+      </div>
+
+      <div class="card card-accent">
+        <h2><span class="n">·</span>Répartition par espèce (%)</h2>
+        <div id="r-espece-chips"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">·</span>Mouvements (bags sortis en évidence)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>BAG</th><th>Certificat</th><th>Camion</th><th>Taille</th><th>Espèce</th><th>Poids</th><th>Type</th></tr></thead>
+          <tbody id="r-mvt-table"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2><span class="n">·</span>Poids réceptionné par camion</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>N° Camion</th><th>Poids réceptionné (kg)</th></tr></thead>
+          <tbody id="camion-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 5 : SORTIE ===== -->
+  <div class="tabpanel" id="panel-sortie">
+    <div class="card">
+      <h2><span class="n">05</span>Enregistrer une sortie de stock</h2>
+      <div class="grid-2">
+        <div class="field">
+          <label>Date de sortie</label>
+          <input type="date" id="so-date">
+        </div>
+        <div class="field">
+          <label>N° BAG</label>
+          <input type="text" id="so-bag" list="bags-en-stock" placeholder="Tapez ou choisissez un bag disponible..." oninput="lookupBag()">
+          <datalist id="bags-en-stock"></datalist>
+        </div>
+      </div>
+      <p class="hint" id="so-count"></p>
+      <div id="bag-lookup"></div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="saveSortie()">Confirmer la sortie</button></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">·</span>Sorties du jour</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>N° BAG</th><th>Certificat</th><th>Camion</th><th>Taille</th><th>Espèce</th><th></th></tr></thead>
+          <tbody id="sortie-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="stock-app.js"></script>
+<script>
+document.getElementById('topbar-slot').outerHTML = buildTopbar('Agent stock');
+
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tabpanel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+  if(t.dataset.tab==='stock') renderStock();
+  if(t.dataset.tab==='bags') renderBags();
+  if(t.dataset.tab==='certificats') renderCertificats();
+  if(t.dataset.tab==='receptions'){ populateReceptionFilters(); renderReceptions(); }
+  if(t.dataset.tab==='sortie'){ populateBagsEnStock(); renderSortieTable(); }
+}));
+
+/* ===================== TAB 1 : STOCK ===================== */
+/* les options des filtres sont peuplées UNE SEULE FOIS au chargement
+   (le bug précédent les régénérait à chaque rendu, ce qui effaçait la sélection) */
+document.getElementById('m-taille').innerHTML = '<option value="">Toutes</option>' + tailleOptions();
+document.getElementById('m-espece').innerHTML = '<option value="">Toutes</option>' + especeOptions();
+
+function renderStock(){
+  const r = computeStockDashboard({
+    date: document.getElementById('m-date').value,
+    taille: document.getElementById('m-taille').value,
+    espece: document.getElementById('m-espece').value
+  });
+
+  document.getElementById('k-poids').textContent = fmt(r.totalPoids) + ' kg';
+  document.getElementById('k-nbags').textContent = r.nbrBags;
+
+  document.getElementById('taille-chips').innerHTML = chipStatsHtml(r.tailleRows, 'taille');
+  document.getElementById('espece-chips').innerHTML = chipStatsHtml(r.especeRows, 'espece');
+
+  document.getElementById('mvt-table').innerHTML = r.movements.length ? r.movements.map(m => `
+    <tr style="${m.sorti ? 'background:var(--red-tint);color:var(--red);font-weight:600' : ''}">
+      <td>${m.date||'—'}</td><td>${m.numBag}</td><td>${m.taille||'—'}</td><td>${m.espece||'—'}</td>
+      <td>${m.certificat||'—'}</td><td>${m.numCamion||'—'}</td><td>${fmt(m.poids)}</td><td>${m.type}</td></tr>`
+  ).join('') : `<tr class="empty-row"><td colspan="8">Aucun mouvement</td></tr>`;
+}
+
+/* ===================== TAB 2 : LES BAGS ===================== */
+async function saveBag(){
+  const numBag = document.getElementById('bag-num').value.trim();
+  const poidsTare = Number(document.getElementById('bag-tare').value)||0;
+  if(!numBag){ toast('Le numéro de bag est requis'); return; }
+
+  const dejaEnregistre = DB.get('bags').some(b => String(b.numBag) === String(numBag));
+  if(dejaEnregistre && !isBagSorti(numBag)){
+    toast('Ce n° de bag est déjà utilisé et toujours en stock — attendez sa sortie avant de le réutiliser');
+    return;
+  }
+
+  const record = { numBag, poidsTare, dateSaisie: todayISO() };
+  await DB.add('bags', record);
+  document.getElementById('bag-num').value = '';
+  document.getElementById('bag-tare').value = '';
+  toast('Bag ' + numBag + ' enregistré');
+  renderBags();
+}
+function renderBags(){
+  const rows = DB.get('bags').slice().reverse();
+  document.getElementById('bags-table').innerHTML = rows.length ? rows.map(b => `
+    <tr><td>${b.numBag}</td><td>${fmt(b.poidsTare)}</td>
+    <td><button class="btn btn-danger" data-del="bags" data-id="${b.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">Suppr.</button></td></tr>`
+  ).join('') : `<tr class="empty-row"><td colspan="3">Aucun bag enregistré</td></tr>`;
+}
+window.__renderers.bags = renderBags;
+
+/* ===================== TAB 3 : CERTIFICATS ===================== */
+async function saveCertificat(){
+  const certificat = document.getElementById('cert-certificat').value.trim();
+  const numContenaire = document.getElementById('cert-contenaire').value.trim();
+  const numCamion = document.getElementById('cert-camion').value.trim();
+  const poidsReceptionne = Number(document.getElementById('cert-poids').value)||0;
+  if(!certificat){ toast('Le certificat est requis'); return; }
+
+  const lignesExistantes = certificatRowsByName(certificat);
+  if(numCamion && lignesExistantes.some(c => c.numCamion === numCamion)){
+    toast('Ce n° de camion est déjà enregistré pour ce certificat');
+    return;
+  }
+  if(numContenaire && lignesExistantes.some(c => c.numContenaire === numContenaire)){
+    toast('Ce n° de contenaire est déjà enregistré pour ce certificat');
+    return;
+  }
+
+  const record = { certificat, numContenaire, numCamion, poidsReceptionne, dateSaisie: todayISO() };
+  await DB.add('certificats', record);
+  ['cert-certificat','cert-contenaire','cert-camion','cert-poids'].forEach(id => document.getElementById(id).value='');
+  toast('Certificat ' + certificat + ' enregistré');
+  renderCertificats();
+}
+function renderCertificats(){
+  const rows = DB.get('certificats').slice().reverse();
+  document.getElementById('certificats-table').innerHTML = rows.length ? rows.map(c => `
+    <tr><td><span class="ticket">${c.certificat}</span></td><td>${c.numContenaire||'—'}</td><td>${c.numCamion||'—'}</td><td>${fmt(c.poidsReceptionne)}</td>
+    <td><button class="btn btn-danger" data-del="certificats" data-id="${c.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">Suppr.</button></td></tr>`
+  ).join('') : `<tr class="empty-row"><td colspan="5">Aucun certificat enregistré</td></tr>`;
+}
+window.__renderers.certificats = renderCertificats;
+
+/* ===================== TAB 4 : LES RÉCEPTIONS ===================== */
+function populateReceptionFilters(){
+  document.getElementById('f-certificat').innerHTML = '<option value="">Tous</option>' +
+    uniqueCertificatNames().map(c => `<option value="${c}">${c}</option>`).join('');
+  document.getElementById('f-taille').innerHTML = '<option value="">Toutes</option>' + tailleOptions();
+  document.getElementById('f-espece').innerHTML = '<option value="">Toutes</option>' + especeOptions();
+  syncCamionFilter();
+}
+
+/* choisir un certificat restreint la liste des camions à ceux réellement associés */
+function syncCamionFilter(){
+  const certificat = document.getElementById('f-certificat').value;
+  const rows = certificat ? certificatRowsByName(certificat) : DB.get('certificats');
+  const seen = new Set();
+  const camions = rows.map(r=>r.numCamion).filter(c => { if(seen.has(c)) return false; seen.add(c); return true; });
+  document.getElementById('f-camion').innerHTML = '<option value="">Tous</option>' +
+    camions.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function renderReceptions(){
+  const filters = {
+    certificat: document.getElementById('f-certificat').value,
+    numCamion: document.getElementById('f-camion').value,
+    taille: document.getElementById('f-taille').value,
+    espece: document.getElementById('f-espece').value
+  };
+  const r = computeReceptionDashboard(filters);
+
+  document.getElementById('k-total-recu').textContent = fmt(r.totalPoidsReceptionne) + ' kg';
+  document.getElementById('k-total-entree').textContent = fmt(r.totalPoidsEntree) + ' kg';
+
+  document.getElementById('camion-table').innerHTML = r.byCamionRows.length ? r.byCamionRows.map(row => `
+    <tr><td>${row.numCamion||'—'}</td><td>${fmt(row.poids)}</td></tr>`
+  ).join('') : `<tr class="empty-row"><td colspan="2">Aucune donnée</td></tr>`;
+
+  document.getElementById('r-taille-chips').innerHTML = chipStatsHtml(r.tailleRows, 'taille');
+  document.getElementById('r-espece-chips').innerHTML = chipStatsHtml(r.especeRows, 'espece');
+
+  document.getElementById('r-mvt-table').innerHTML = r.movements.length ? r.movements.map(m => `
+    <tr style="${m.sorti ? 'background:var(--red-tint);color:var(--red);font-weight:600' : ''}">
+      <td>${m.date||'—'}</td><td>${m.numBag}</td><td>${m.certificat||'—'}</td><td>${m.numCamion||'—'}</td>
+      <td>${m.taille||'—'}</td><td>${m.espece||'—'}</td><td>${fmt(m.poids)}</td><td>${m.type}</td></tr>`
+  ).join('') : `<tr class="empty-row"><td colspan="8">Aucun mouvement</td></tr>`;
+}
+
+/* ===================== TAB 5 : SORTIE ===================== */
+document.getElementById('so-date').value = todayISO();
+
+function populateBagsEnStock(){
+  const bags = bagsEnStockList();
+  document.getElementById('bags-en-stock').innerHTML = bags.map(b => `<option value="${b}"></option>`).join('');
+  document.getElementById('so-count').textContent = bags.length + ' bag(s) actuellement disponible(s) en stock';
+}
+
+function lookupBag(){
+  const numBag = document.getElementById('so-bag').value.trim();
+  const container = document.getElementById('bag-lookup');
+  if(!numBag){ container.innerHTML = ''; return; }
+
+  const matches = findAllEntreesActive(numBag);
+  if(!matches.length){
+    container.innerHTML = `<p class="hint" style="color:var(--red)">Ce bag n'est pas actuellement en stock.</p>`;
+    return;
+  }
+  if(matches.length === 1){
+    const e = matches[0];
+    container.innerHTML = `
+      <input type="hidden" id="so-choice" value="${e.id}">
+      <span class="ticket"><span class="lbl">En stock</span>${e.certificat} · camion ${e.numCamion} · T.${e.taille} · ${e.espece} · ${fmt(entreeNet(e))} kg</span>`;
+    return;
+  }
+  /* plusieurs certificats partagent ce numéro de bag : on laisse choisir */
+  container.innerHTML = `
+    <p class="hint" style="color:var(--amber)">${matches.length} entrées actives portent ce numéro de bag — choisissez laquelle sortir :</p>
+    <select id="so-choice" onchange="renderChoiceTicket()">
+      ${matches.map(e => `<option value="${e.id}">${e.certificat} · camion ${e.numCamion} · T.${e.taille} · ${e.espece} · ${fmt(entreeNet(e))} kg</option>`).join('')}
+    </select>
+    <div id="choice-ticket" style="margin-top:10px"></div>`;
+  renderChoiceTicket();
+}
+
+function renderChoiceTicket(){
+  const sel = document.getElementById('so-choice');
+  const box = document.getElementById('choice-ticket');
+  if(!sel || !box) return;
+  const e = DB.get('entree').find(x => x.id === Number(sel.value));
+  box.innerHTML = e ? `
+    <span class="ticket"><span class="lbl">Sélectionné</span>${e.certificat} · camion ${e.numCamion} · T.${e.taille} · ${e.espece} · ${fmt(entreeNet(e))} kg</span>` : '';
+}
+
+async function saveSortie(){
+  const choiceEl = document.getElementById('so-choice');
+  if(!choiceEl || !choiceEl.value){ toast('Sélectionnez le bag à sortir'); return; }
+  const e = DB.get('entree').find(x => x.id === Number(choiceEl.value));
+  if(!e){ toast('Entrée introuvable'); return; }
+  const record = {
+    idEntreeRef: e.id, numBag: e.numBag, certificat: e.certificat, numContenaire: e.numContenaire,
+    numCamion: e.numCamion, taille: e.taille, espece: e.espece,
+    dateSortie: document.getElementById('so-date').value || todayISO()
+  };
+  await DB.add('sortie', record);
+  document.getElementById('so-bag').value = '';
+  document.getElementById('bag-lookup').innerHTML = '';
+  toast('Bag ' + e.numBag + ' sorti du stock (' + e.certificat + ')');
+  populateBagsEnStock();
+  renderSortieTable();
+}
+
+function renderSortieTable(){
+  const today = document.getElementById('so-date').value || todayISO();
+  const rows = DB.get('sortie').filter(s => s.dateSortie === today);
+  document.getElementById('sortie-table').innerHTML = rows.length ? rows.map(s => `
+    <tr><td>${s.numBag}</td><td>${s.certificat}</td><td>${s.numCamion||'—'}</td><td>${s.taille||'—'}</td><td>${s.espece||'—'}</td>
+    <td><button class="btn btn-danger" data-del="sortie" data-id="${s.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">Suppr.</button></td></tr>`
+  ).join('') : `<tr class="empty-row"><td colspan="6">Aucune sortie aujourd'hui</td></tr>`;
+}
+window.__renderers.sortie = renderSortieTable;
+window.__renderers.entree = function(){ renderStock(); populateBagsEnStock(); };
+
+renderStock();
+</script>
+</body>
+</html>

@@ -48,6 +48,8 @@ tableaux de bord (rendement, certificats, moyen frais, pertes).</p>
             <option value="pointage">Agent de pointage</option>
             <option value="direction">Directeur (visualisation)</option>
             <option value="rh">Agent RH</option>
+            <option value="reception_stock">Agent Réception Stock</option>
+            <option value="stock">Gestionnaire de Stock</option>
           </select>
         </div>
       </div>
@@ -288,7 +290,17 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   if(map[t.dataset.tab]) map[t.dataset.tab]();
 }));
 
-const ROLE_LABELS = { admin:'Administrateur', chef:'Chef de production', pesee:'Agent de pesée', reception:'Agent de réception', pointage:'Agent de pointage', direction:'Directeur', rh:'Agent RH' };
+const ROLE_LABELS = {
+    admin: 'Administrateur',
+    chef: 'Chef prod.',
+    pesee: 'Agent pesée',
+    reception: 'Agent récep.',
+    pointage: 'Agent pointage',
+    direction: 'Directeur',
+    rh: 'Agent RH',
+    reception_stock: 'Récep. Stock',
+    stock: 'Gest. Stock'
+  };
 
 // ==================== EXPORT FUNCTIONS ====================
 function getTableData(tableType) {
