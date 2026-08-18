@@ -79,8 +79,8 @@ function computeCongelStats(idSession){
    (mouvement de sortie de stock).
    =========================================================== */
 
-const TAILLES_REF = ["0,5","1-2","2-3","3-5"];
-const ESPECES_REF = ["T1","T3","RT1","TE-1","TE-3"];
+const TAILLES_REF = ["0,5","1-2","2-3","3-5","+5"];
+const ESPECES_REF = ["T1","T2","T3"];
 
 function tailleOptions(selected){
   return TAILLES_REF.map(t => `<option value="${t}" ${t===selected?'selected':''}>${t}</option>`).join('');

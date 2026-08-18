@@ -57,7 +57,7 @@
   
   /* ---------- layout shell ---------- */
   .topbar{
-    background:var(--teal-dark);
+    background:#103b6b;
     color:#eaf3f2;
     padding:14px 22px;
     display:flex;
