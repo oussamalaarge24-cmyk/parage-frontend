@@ -23,8 +23,8 @@
 
     <div class="field">
       <label>Certificat</label>
-      <input type="text" id="e-certificat" list="certificat-list" placeholder="Tapez pour rechercher..." oninput="syncCamions()">
-      <datalist id="certificat-list"></datalist>
+      <input type="text" id="e-certificat" autocomplete="off" placeholder="Tapez pour rechercher..." oninput="formatCertificat(this); showAutocomplete(this.value); syncCamions()" onfocus="showAutocomplete(this.value)">
+      <div id="cert-autocomplete" class="autocomplete-dropdown"></div>
     </div>
 
     <div class="field">
@@ -67,10 +67,55 @@
 <script>
 document.getElementById('topbar-slot').outerHTML = buildTopbar('Agent de réception', 'FRIGO');
 
-document.getElementById('certificat-list').innerHTML =
-  uniqueCertificatNames().map(c => `<option value="${c}"></option>`).join('');
+
 document.getElementById('e-taille').innerHTML = tailleOptions();
 document.getElementById('e-espece').innerHTML = especeOptions();
+
+function formatCertificat(input) {
+  let val = input.value.replace(/\s+/g, '').toUpperCase();
+  let formatted = '';
+  if (val.length > 0) formatted += val.substring(0, 4);
+  if (val.length > 4) formatted += ' ' + val.substring(4, 7);
+  if (val.length > 7) formatted += ' ' + val.substring(7, 10);
+  if (val.length > 10) formatted += ' ' + val.substring(10, 13);
+  if (val.length > 13) formatted += val.substring(13);
+  input.value = formatted;
+}
+
+function showAutocomplete(val) {
+  const container = document.getElementById('cert-autocomplete');
+  const allCerts = uniqueCertificatNames();
+  
+  if (!val) {
+    container.innerHTML = allCerts.map(c => `<div class="autocomplete-item" onclick="selectCertificat('${c}')">${c}</div>`).join('');
+    container.style.display = allCerts.length ? 'block' : 'none';
+    return;
+  }
+  
+  const search = val.toUpperCase().replace(/\s+/g, '');
+  const matches = allCerts.filter(c => c.toUpperCase().replace(/\s+/g, '').includes(search));
+  
+  if (matches.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+  
+  container.innerHTML = matches.map(c => `<div class="autocomplete-item" onclick="selectCertificat('${c}')">${c}</div>`).join('');
+  container.style.display = 'block';
+}
+
+function selectCertificat(cert) {
+  document.getElementById('e-certificat').value = cert;
+  document.getElementById('cert-autocomplete').style.display = 'none';
+  syncCamions();
+}
+
+document.addEventListener('click', function(e) {
+  if (e.target.id !== 'e-certificat') {
+    const ac = document.getElementById('cert-autocomplete');
+    if(ac) ac.style.display = 'none';
+  }
+});
 
 function syncCamions(){
   const certificat = document.getElementById('e-certificat').value.trim();

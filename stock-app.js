@@ -181,7 +181,13 @@ function stockMovements(filters){
   });
   let rows = entree.concat(sortie);
   rows = rows.filter(r => matchesMovementFilters(r, filters));
-  rows.sort((a,b) => (a.date < b.date ? 1 : -1));
+  // Reverse to put newest added items first, then stable sort by date
+  rows.reverse();
+  rows.sort((a,b) => {
+    if (a.date < b.date) return 1;
+    if (a.date > b.date) return -1;
+    return 0;
+  });
   return rows;
 }
 
@@ -200,7 +206,13 @@ function receptionMovements(filters){
     };
   });
   rows = rows.filter(r => matchesMovementFilters(r, filters));
-  rows.sort((a,b) => (a.date < b.date ? 1 : -1));
+  // Reverse to put newest added items first, then stable sort by date
+  rows.reverse();
+  rows.sort((a,b) => {
+    if (a.date < b.date) return 1;
+    if (a.date > b.date) return -1;
+    return 0;
+  });
   return rows;
 }
 
@@ -228,7 +240,7 @@ function computeStockDashboard(filters){
   return {
     totalPoids, nbrBags: enStock.length,
     tailleRows, especeRows,
-    movements: stockMovements(filters)
+    movements: stockMovements({ date: filters.date })
   };
 }
 

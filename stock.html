@@ -104,7 +104,7 @@
       <div class="grid-2">
         <div class="field">
           <label>Certificat</label>
-          <input type="text" id="cert-certificat" placeholder="TMIS 237 128 B04">
+          <input type="text" id="cert-certificat" placeholder="TMIS 237 128 B04" oninput="formatCertificat(this)">
         </div>
         <div class="field">
           <label>N° Contenaire</label>
@@ -259,7 +259,7 @@ function renderStock(){
   document.getElementById('espece-chips').innerHTML = chipStatsHtml(r.especeRows, 'espece');
 
   document.getElementById('mvt-table').innerHTML = r.movements.length ? r.movements.map(m => `
-    <tr style="${m.sorti ? 'background:var(--red-tint);color:var(--red);font-weight:600' : ''}">
+    <tr>
       <td>${m.date||'—'}</td><td>${m.numBag}</td><td>${m.taille||'—'}</td><td>${m.espece||'—'}</td>
       <td>${m.certificat||'—'}</td><td>${m.numCamion||'—'}</td><td>${fmt(m.poids)}</td><td>${m.type}</td></tr>`
   ).join('') : `<tr class="empty-row"><td colspan="8">Aucun mouvement</td></tr>`;
@@ -313,7 +313,7 @@ async function saveCertificat(){
 
   const record = { certificat, numContenaire, numCamion, poidsReceptionne, dateSaisie: todayISO() };
   await DB.add('certificats', record);
-  ['cert-certificat','cert-contenaire','cert-camion','cert-poids'].forEach(id => document.getElementById(id).value='');
+  ['cert-contenaire','cert-camion','cert-poids'].forEach(id => document.getElementById(id).value='');
   toast('Certificat ' + certificat + ' enregistré');
   renderCertificats();
 }
@@ -325,6 +325,17 @@ function renderCertificats(){
   ).join('') : `<tr class="empty-row"><td colspan="5">Aucun certificat enregistré</td></tr>`;
 }
 window.__renderers.certificats = renderCertificats;
+
+function formatCertificat(input) {
+  let val = input.value.replace(/\s+/g, '').toUpperCase();
+  let formatted = '';
+  if (val.length > 0) formatted += val.substring(0, 4);
+  if (val.length > 4) formatted += ' ' + val.substring(4, 7);
+  if (val.length > 7) formatted += ' ' + val.substring(7, 10);
+  if (val.length > 10) formatted += ' ' + val.substring(10, 13);
+  if (val.length > 13) formatted += val.substring(13); // in case it's longer
+  input.value = formatted;
+}
 
 /* ===================== TAB 4 : LES RÉCEPTIONS ===================== */
 function populateReceptionFilters(){
