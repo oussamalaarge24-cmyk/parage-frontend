@@ -286,19 +286,19 @@
   .empty-row td{ color:var(--ink-soft); font-style:italic; text-align:center; padding:22px; }
   
   /* ---------- stat cards ---------- */
-  .stats{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-bottom:20px; }
-  @media (max-width:560px){ .stats{ grid-template-columns:1fr; } }
-  .stat{
+  .stock-stats{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-bottom:20px; }
+  @media (max-width:560px){ .stock-stats{ grid-template-columns:1fr; } }
+  .stock-stat{
     background:var(--surface);
     border:1px solid var(--line);
     border-radius:var(--radius);
     padding:24px 26px;
     box-shadow:var(--shadow);
   }
-  .stat .label{ font-size:13px; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-soft); font-weight:600; }
-  .stat .value{ font-family:var(--font-display); font-size:42px; font-weight:700; margin-top:6px; color:var(--teal-dark); line-height:1.05; }
-  .stat .value.warn{ color:var(--amber); }
-  .stat .value.good{ color:var(--green); }
+  .stock-stat .label{ font-size:13px; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-soft); font-weight:600; }
+  .stock-stat .value{ font-family:var(--font-display); font-size:42px; font-weight:700; margin-top:6px; color:var(--teal-dark); line-height:1.05; }
+  .stock-stat .value.warn{ color:var(--amber); }
+  .stock-stat .value.good{ color:var(--green); }
   
   .pill{ display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; }
   .pill-teal{ background:var(--teal-tint); color:var(--teal-dark); }
