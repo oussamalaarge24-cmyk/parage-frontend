@@ -165,7 +165,13 @@ function compareOperatriceNums(a, b) {
 
 function lotOptions(selectedId) {
   const lots = DB.get('lot');
-  const allReversed = [...lots].reverse();
+  const now = new Date();
+  const recentLots = lots.filter(l => {
+    if (!l.createdAt) return true;
+    const lotDate = new Date(l.createdAt);
+    return (now - lotDate) <= 24 * 60 * 60 * 1000;
+  });
+  const allReversed = [...recentLots].reverse();
   return allReversed.map(l =>
     `<option value="${l.id}" ${l.id === selectedId ? 'selected' : ''}>${l.certificat} — ${l.espece || '?'} — T.${l.taille || '?'}</option>`
   ).join('');
