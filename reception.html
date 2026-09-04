@@ -202,16 +202,16 @@ async function saveLot() {
     btn.textContent = origText;
   }
 }
-//function editLot(id) {
- // const lot = DB.get('lot').find(l => l.id === id);
- // if (!lot) return;
+function editLot(id) {
+  const lot = DB.get('lot').find(l => l.id === id);
+  if (!lot) return;
 
-//  document.getElementById('lot-certificat').value = lot.certificat;
-//  document.getElementById('lot-espece').value = lot.espece || '';
-//  document.getElementById('lot-taille').value = lot.taille || '';
+  document.getElementById('lot-certificat').value = lot.certificat || '';
+  document.getElementById('lot-espece').value = lot.espece || '';
+  document.getElementById('lot-taille').value = lot.taille || '';
 
- // window.editLotId = id;
-//}
+  window.editLotId = id;
+}
 function renderLots(){
   const lots = DB.get('lot');
   const last3 = lots.slice(-6).reverse();
@@ -222,8 +222,12 @@ function renderLots(){
       <td data-label="Espèce">${l.espece||'—'}</td>
       <td data-label="Taille">${l.taille||'—'}</td>
       <td>
-        
-    
+        <button
+          class="btn btn-secondary"
+          onclick="editLot('${l.id}')"
+          style="padding:6px 10px;min-height:32px;font-size:12px;margin-right:4px;">
+          Éditer
+        </button>
         <button
           class="btn btn-danger"
           data-del="lot"
