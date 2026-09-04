@@ -302,49 +302,26 @@ async function saveCertificat(){
   if(!certificat){ toast('Le certificat est requis'); return; }
 
   const lignesExistantes = certificatRowsByName(certificat);
-  if(numCamion && lignesExistantes.some(c => c.numCamion === numCamion && c.id !== editCertificatId)){
+  if(numCamion && lignesExistantes.some(c => c.numCamion === numCamion)){
     toast('Ce n° de camion est déjà enregistré pour ce certificat');
     return;
   }
-  if(numContenaire && lignesExistantes.some(c => c.numContenaire === numContenaire && c.id !== editCertificatId)){
+  if(numContenaire && lignesExistantes.some(c => c.numContenaire === numContenaire)){
     toast('Ce n° de contenaire est déjà enregistré pour ce certificat');
     return;
   }
 
   const record = { certificat, numContenaire, numCamion, poidsReceptionne, dateSaisie: todayISO() };
-  if (editCertificatId !== null) {
-    await DB.update('certificats', editCertificatId, record);
-    editCertificatId = null;
-    toast('Certificat modifié');
-  } else {
-    await DB.add('certificats', record);
-    toast('Certificat ' + certificat + ' enregistré');
-  }
-  
+  await DB.add('certificats', record);
   ['cert-contenaire','cert-camion','cert-poids'].forEach(id => document.getElementById(id).value='');
+  toast('Certificat ' + certificat + ' enregistré');
   renderCertificats();
 }
-
-let editCertificatId = null;
-function editCertificat(id) {
-  const c = DB.get('certificats').find(x => x.id == id);
-  if (!c) return;
-  document.getElementById('cert-certificat').value = c.certificat || '';
-  document.getElementById('cert-contenaire').value = c.numContenaire || '';
-  document.getElementById('cert-camion').value = c.numCamion || '';
-  document.getElementById('cert-poids').value = c.poidsReceptionne || '';
-  editCertificatId = id;
-  document.getElementById('cert-certificat').focus();
-}
-
 function renderCertificats(){
   const rows = DB.get('certificats').slice().reverse();
   document.getElementById('certificats-table').innerHTML = rows.length ? rows.map(c => `
     <tr><td><span class="ticket">${c.certificat}</span></td><td>${c.numContenaire||'—'}</td><td>${c.numCamion||'—'}</td><td>${fmt(c.poidsReceptionne)}</td>
-    <td>
-      <button class="btn btn-secondary" onclick="editCertificat('${c.id}')" style="padding:6px 10px;min-height:32px;font-size:12.5px;margin-right:4px;">Éditer</button>
-      <button class="btn btn-danger" data-del="certificats" data-id="${c.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">Suppr.</button>
-    </td></tr>`
+    <td><button class="btn btn-danger" data-del="certificats" data-id="${c.id}" style="padding:6px 10px;min-height:32px;font-size:12.5px">Suppr.</button></td></tr>`
   ).join('') : `<tr class="empty-row"><td colspan="5">Aucun certificat enregistré</td></tr>`;
 }
 window.__renderers.certificats = renderCertificats;
