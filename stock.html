@@ -327,7 +327,7 @@ async function saveCertificat(){
 
 let editCertificatId = null;
 function editCertificat(id) {
-  const c = DB.get('certificats').find(x => x.id === id);
+  const c = DB.get('certificats').find(x => x.id == id);
   if (!c) return;
   document.getElementById('cert-certificat').value = c.certificat || '';
   document.getElementById('cert-contenaire').value = c.numContenaire || '';

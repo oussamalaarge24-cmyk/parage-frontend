@@ -203,7 +203,7 @@ async function saveLot() {
   }
 }
 function editLot(id) {
-  const lot = DB.get('lot').find(l => l.id === id);
+  const lot = DB.get('lot').find(l => l.id == id);
   if (!lot) return;
 
   document.getElementById('lot-certificat').value = lot.certificat || '';
