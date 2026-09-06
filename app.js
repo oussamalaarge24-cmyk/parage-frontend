@@ -462,7 +462,7 @@ const DB = {
     const updated = await res.json();
     const rows = this.cache[table] || [];
     const idx = rows.findIndex(r => r.id === id);
-    if (idx > -1) rows[idx] = Object.assign({}, rows[idx], patch);
+    if (idx > -1) rows[idx] = Object.assign({}, rows[idx], updated);
     return updated;
   },
 

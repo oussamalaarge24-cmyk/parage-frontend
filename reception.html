@@ -26,8 +26,11 @@
 
   <!-- ===== TAB 1 : LOT ===== -->
   <div class="tabpanel active" id="panel-lot">
-    <div class="card">
+    <div class="card" id="lot-form-card">
       <h2><span class="n">01</span>Enregistrer un lot</h2>
+      <div id="edit-mode-banner" style="display:none;background:linear-gradient(90deg,#0e7490,#0891b2);color:#fff;border-radius:8px;padding:10px 16px;margin-bottom:14px;font-size:0.97em;font-weight:600;letter-spacing:0.02em;display:none;align-items:center;gap:10px;">
+        <span style="font-size:1.3em;">✏️</span> Mode édition — modifiez les champs puis cliquez <em>Enregistrer</em>
+      </div>
       <div class="grid-3">
         <div class="field">
           <label>Certificat</label>
@@ -43,7 +46,8 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="saveLot()">Enregistrer le lot</button>
+        <button class="btn btn-primary" id="lot-save-btn" onclick="saveLot()">Enregistrer le lot</button>
+        <button class="btn" id="lot-cancel-btn" onclick="cancelEditLot()" style="display:none;background:#f1f5f9;color:#475569;border:1.5px solid #cbd5e1;">✕ Annuler</button>
       </div>
     </div>
 
@@ -190,6 +194,14 @@ async function saveLot() {
       document.getElementById(id).value = '';
     });
 
+    // Reset edit-mode UI
+    document.getElementById('edit-mode-banner').style.display = 'none';
+    document.getElementById('lot-cancel-btn').style.display = 'none';
+    document.getElementById('lot-save-btn').textContent = 'Enregistrer le lot';
+    const card = document.getElementById('lot-form-card');
+    card.style.outline = '';
+    card.style.boxShadow = '';
+
     renderLots();
 
     const lastLot = DB.last('lot');
@@ -202,28 +214,58 @@ async function saveLot() {
     btn.textContent = origText;
   }
 }
-//function editLot(id) {
- // const lot = DB.get('lot').find(l => l.id === id);
- // if (!lot) return;
+function editLot(id) {
+  const lot = DB.get('lot').find(l => l.id === id);
+  if (!lot) return;
 
-//  document.getElementById('lot-certificat').value = lot.certificat;
-//  document.getElementById('lot-espece').value = lot.espece || '';
-//  document.getElementById('lot-taille').value = lot.taille || '';
+  document.getElementById('lot-certificat').value = lot.certificat;
+  document.getElementById('lot-espece').value = lot.espece || '';
+  document.getElementById('lot-taille').value = lot.taille || '';
 
- // window.editLotId = id;
-//}
+  editLotId = id;
+
+  // Show edit-mode UI
+  const banner = document.getElementById('edit-mode-banner');
+  banner.style.display = 'flex';
+  document.getElementById('lot-cancel-btn').style.display = '';
+  document.getElementById('lot-save-btn').textContent = '💾 Mettre à jour le lot';
+  const card = document.getElementById('lot-form-card');
+  card.style.outline = '2.5px solid #0891b2';
+  card.style.boxShadow = '0 0 0 4px rgba(8,145,178,0.13)';
+
+  // Scroll to form & focus first field
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('lot-certificat').focus();
+}
+
+function cancelEditLot() {
+  editLotId = null;
+  ['lot-certificat', 'lot-espece', 'lot-taille'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('edit-mode-banner').style.display = 'none';
+  document.getElementById('lot-cancel-btn').style.display = 'none';
+  document.getElementById('lot-save-btn').textContent = 'Enregistrer le lot';
+  const card = document.getElementById('lot-form-card');
+  card.style.outline = '';
+  card.style.boxShadow = '';
+}
 function renderLots(){
-  const lots = DB.get('lot');
+  const lots = DB.get('lot').slice().sort((a, b) => a.id - b.id);
   const last3 = lots.slice(-6).reverse();
   document.getElementById('lot-table').innerHTML = last3.length ? last3.map(l => `
-    <tr>
+    <tr id="lot-row-${l.id}">
       <td data-label="ID Lot"><span class="ticket">${l.id}</span></td>
       <td data-label="Certificat">${l.certificat}</td>
       <td data-label="Espèce">${l.espece||'—'}</td>
       <td data-label="Taille">${l.taille||'—'}</td>
-      <td>
-        
-    
+      <td style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button
+          class="btn"
+          onclick="editLot(${l.id})"
+          style="padding:6px 10px;min-height:32px;font-size:12px;background:#e0f2fe;color:#0369a1;border:1.5px solid #bae6fd;">
+          ✏️ Modifier
+        </button>
         <button
           class="btn btn-danger"
           data-del="lot"
