@@ -164,7 +164,7 @@ function renderProd(){
   //.sort((a, b) => b.id - a.id)[0];
   const last10 = [...prods]
   .sort((a, b) => b.id - a.id)
-  .slice(0, 10);
+  .slice(0, 100);
   const tbody = document.getElementById('prod-table');
   //if(!last){
    // tbody.innerHTML = `<tr class="empty-row"><td colspan="7">Aucune production saisie aujourd'hui</td></tr>`;
